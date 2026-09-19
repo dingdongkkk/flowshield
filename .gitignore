@@ -7,3 +7,4 @@ tmp
 # Large source downloads; reproduce with: python3 data/bengaluru/fetch.py
 data/bengaluru/raw/*.kml
 data/bengaluru/raw/*-parts
+data/bengaluru/raw/osm-buildings.json

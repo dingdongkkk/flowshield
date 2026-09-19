@@ -168,7 +168,13 @@ export function ScenarioForm({ draft, onChange, disabled }: Props) {
           <span>Clear district drains{drainIssue ? "" : " (drains are working)"}</span>
         </label>
         {draft.clearDrainsAtMin !== null && drainIssue ? (
-          <Field label="Cleared at" value={`T+${draft.clearDrainsAtMin} min`}>
+          <Field
+            label="Cleared at"
+            value={`T+${draft.clearDrainsAtMin} min`}
+            {...(draft.basinDrainCondition === "fails-mid-storm" && draft.clearDrainsAtMin <= draft.drainFailureMin
+              ? { hint: "Clearing must come after the failure, so it is ignored" }
+              : {})}
+          >
             <input
               type="range" min={0} max={draft.durationMin - 5} step={5}
               value={draft.clearDrainsAtMin}
