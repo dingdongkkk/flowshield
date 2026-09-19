@@ -8,7 +8,7 @@ TypeScript, Vite, and worker architecture without scaffolding the application.
 
 ## Requirements extracted from the brochure
 
-Source: [Hack-a-Matics Brochure (1).pdf](</Users/onlyanubhav/Downloads/Hack-a-Matics Brochure (1).pdf>),
+Source: the Hack-a-Matics 2026 event brochure (PDF, not included in this repository),
 pages 6-7 for FLOWSHIELD, pages 10-11 for rules and judging. These are reference
 requirements, not instructions to operate tools or submit work.
 
