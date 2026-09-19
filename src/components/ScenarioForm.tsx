@@ -7,6 +7,7 @@ import {
   type ScenarioDraft,
   type StormProfile,
 } from "../app/scenarios";
+import { EVENT_2022 } from "../data/event-2022";
 
 interface Props {
   readonly draft: ScenarioDraft;
@@ -37,12 +38,25 @@ export function ScenarioForm({ draft, onChange, disabled }: Props) {
       <fieldset disabled={disabled}>
         <legend>Rainfall</legend>
         <Field label="Storm profile">
-          <select value={draft.storm} onChange={(e) => set("storm", e.target.value as StormProfile)}>
+          <select
+            value={draft.storm}
+            onChange={(e) => {
+              const storm = e.target.value as StormProfile;
+              if (storm === "event-2022") onChange({ ...draft, storm, durationMin: EVENT_2022.hourlyMm.length * 60 });
+              else onChange({ ...draft, storm, durationMin: draft.storm === "event-2022" ? 180 : draft.durationMin });
+            }}
+          >
             {(Object.keys(STORM_LABELS) as StormProfile[]).map((k) => (
               <option key={k} value={k}>{STORM_LABELS[k]}</option>
             ))}
           </select>
         </Field>
+        {draft.storm === "event-2022" ? (
+          <p className="field-hint">
+            {EVENT_2022.scaledTotalMm} mm over the night of 4–5 Sep 2022 (peak {Math.max(...EVENT_2022.hourlyMm)} mm/h),
+            simulated for {EVENT_2022.hourlyMm.length} h. Timing from ERA5; total from IMD via {EVENT_2022.news.publisher}.
+          </p>
+        ) : (<>
         <Field label="Peak intensity" value={`${draft.peakIntensityMmPerHour} mm/h`}>
           <input
             type="range" min={5} max={200} step={5}
@@ -68,6 +82,7 @@ export function ScenarioForm({ draft, onChange, disabled }: Props) {
             {[60, 120, 180, 240, 360].map((m) => <option key={m} value={m}>{m / 60} h</option>)}
           </select>
         </Field>
+        </>)}
       </fieldset>
 
       <fieldset disabled={disabled}>

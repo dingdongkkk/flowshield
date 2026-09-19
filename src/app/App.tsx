@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type {
   SimulationConfig,
   SimulationFrame,
@@ -8,50 +8,70 @@ import type {
 import { canonicalJson } from "./canonical";
 import { deriveComparison, crossingTime } from "./comparison";
 import { formatModelTime } from "./format";
-import { ILLUSTRATIVE_CONFIG, ILLUSTRATIVE_RUN } from "./illustrativeFixture";
 import { buildScenarioPair, DEFAULT_DRAFT, GRID, type ScenarioDraft } from "./scenarios";
 import { BENGALURU_TERRAIN } from "../data/bengaluru-terrain";
 import { SimulationClient, type RunOutcome } from "./simulationClient";
+import { AIPanel } from "../components/AIPanel";
 import { ComparisonPanel } from "../components/ComparisonPanel";
 import { DiagnosticsPanel } from "../components/DiagnosticsPanel";
 import { FloodMap, type MapMode } from "../components/FloodMap";
+import { HowItWorks } from "../components/HowItWorks";
+import { PresetBar } from "../components/PresetBar";
 import { RegionDetail } from "../components/RegionDetail";
 import { RiskTimeline } from "../components/RiskTimeline";
 import { ScenarioForm } from "../components/ScenarioForm";
+import { SensitivityPanel, type SensitivityRow } from "../components/SensitivityPanel";
 import { TimeControls } from "../components/TimeControls";
+import { ValidationPanel } from "../components/ValidationPanel";
 import { WarningTable } from "../components/WarningTable";
 import { depthScaleMax } from "../components/colors";
-import { FloodAtlas } from "../components/FloodAtlas";
 
-const ENGINE_PRESENT = Object.keys(import.meta.glob("../simulation/index.ts")).length > 0;
+// MapLibre is large; load the atlas separately so the controls appear at once.
+const FloodAtlas = lazy(() => import("../components/FloodAtlas").then((m) => ({ default: m.FloodAtlas })));
 
 type SlotName = "baseline" | "intervention";
 
+interface RunInput {
+  readonly requestId: string;
+  readonly config: SimulationConfig;
+  readonly draft: ScenarioDraft;
+  readonly key: string;
+}
+
 type Slot =
   | { readonly phase: "idle" }
-  | { readonly phase: "running"; readonly requestId: string; readonly config: SimulationConfig; readonly key: string }
-  | { readonly phase: "done"; readonly requestId: string; readonly config: SimulationConfig; readonly key: string; readonly run: SimulationRun }
-  | { readonly phase: "error"; readonly requestId: string; readonly config: SimulationConfig; readonly key: string; readonly message: string }
-  | { readonly phase: "cancelled"; readonly config: SimulationConfig; readonly key: string };
+  | ({ readonly phase: "running" } & RunInput)
+  | ({ readonly phase: "done"; readonly run: SimulationRun } & RunInput)
+  | ({ readonly phase: "error"; readonly message: string } & RunInput)
+  | ({ readonly phase: "cancelled" } & RunInput);
 
 type Slots = Readonly<Record<SlotName, Slot>>;
 
 const IDLE: Slots = { baseline: { phase: "idle" }, intervention: { phase: "idle" } };
+const AUTO_RUN_DELAY_MS = 600;
 
-function settle(outcome: RunOutcome, config: SimulationConfig, key: string): Slot {
+const SENSITIVITY_VARIANTS: readonly { label: string; change: Partial<ScenarioDraft> | ((d: ScenarioDraft) => Partial<ScenarioDraft>) }[] = [
+  { label: "As configured", change: {} },
+  { label: "Conductance × 0.5", change: { conductanceScale: 0.5 } },
+  { label: "Conductance × 2", change: { conductanceScale: 2 } },
+  { label: "Drain capacity − 25%", change: (d) => ({ drainDesignMmPerHour: d.drainDesignMmPerHour * 0.75 }) },
+  { label: "Drain capacity + 25%", change: (d) => ({ drainDesignMmPerHour: d.drainDesignMmPerHour * 1.25 }) },
+];
+
+function settle(outcome: RunOutcome, input: RunInput): Slot {
   switch (outcome.kind) {
     case "completed":
-      return { phase: "done", requestId: outcome.requestId, config, key, run: outcome.run };
+      return { phase: "done", ...input, run: outcome.run };
     case "app-error":
-      return { phase: "error", requestId: outcome.requestId, config, key, message: outcome.message };
+      return { phase: "error", ...input, message: outcome.message };
     case "cancelled":
-      return { phase: "cancelled", config, key };
+      return { phase: "cancelled", ...input };
   }
 }
 
-function successOf(slot: Slot): { config: SimulationConfig; result: SimulationResult } | null {
+function successOf(slot: Slot): { config: SimulationConfig; draft: ScenarioDraft; result: SimulationResult } | null {
   return slot.phase === "done" && slot.run.status === "success"
-    ? { config: slot.config, result: slot.run.result }
+    ? { config: slot.config, draft: slot.draft, result: slot.run.result }
     : null;
 }
 
@@ -75,9 +95,6 @@ function SlotProblem({ name, slot }: { name: string; slot: Slot }) {
         <strong>{name}: application error.</strong> {slot.message}
       </div>
     );
-  }
-  if (slot.phase === "cancelled") {
-    return <div className="notice">{name}: run cancelled.</div>;
   }
   if (slot.phase !== "done") return null;
   const { run } = slot;
@@ -109,25 +126,25 @@ function SlotProblem({ name, slot }: { name: string; slot: Slot }) {
 
 export function App() {
   const [draft, setDraft] = useState<ScenarioDraft>(DEFAULT_DRAFT);
+  const [presetId, setPresetId] = useState<string | null>("heavy");
+  const [autoRun, setAutoRun] = useState(true);
   const [slots, setSlots] = useState<Slots>(IDLE);
-  const [fixtureMode, setFixtureMode] = useState(false);
   const [mapMode, setMapMode] = useState<MapMode>("depth");
   const [frameIndex, setFrameIndex] = useState(0);
   const [playing, setPlaying] = useState(false);
   const [speed, setSpeed] = useState(2);
   const [selectedId, setSelectedId] = useState<string | null>(null);
-  const clients = useRef<Record<SlotName, SimulationClient> | null>(null);
+  const [sensitivity, setSensitivity] = useState<{ key: string; rows: SensitivityRow[]; running: boolean }>({ key: "", rows: [], running: false });
+  const clients = useRef<Record<SlotName | "sensitivity", SimulationClient> | null>(null);
 
   useEffect(() => {
     const created = {
       baseline: new SimulationClient("baseline"),
       intervention: new SimulationClient("intervention"),
+      sensitivity: new SimulationClient("sensitivity"),
     };
     clients.current = created;
-    return () => {
-      created.baseline.dispose();
-      created.intervention.dispose();
-    };
+    return () => Object.values(created).forEach((c) => c.dispose());
   }, []);
 
   const pair = useMemo(() => buildScenarioPair(draft), [draft]);
@@ -138,46 +155,74 @@ export function App() {
 
   const running = slots.baseline.phase === "running" || slots.intervention.phase === "running";
 
-  const runSlot = useCallback((name: SlotName, config: SimulationConfig) => {
+  const runSlot = useCallback((name: SlotName, config: SimulationConfig, runDraft: ScenarioDraft) => {
     const client = clients.current?.[name];
     if (!client) return;
     const key = canonicalJson(config);
     const { requestId, outcome } = client.run(config);
-    setSlots((s) => ({ ...s, [name]: { phase: "running", requestId, config, key } }));
+    const input: RunInput = { requestId, config, draft: runDraft, key };
+    setSlots((s) => ({ ...s, [name]: { phase: "running", ...input } }));
     void outcome.then((o) => {
       setSlots((s) => {
         const current = s[name];
         if (current.phase !== "running" || current.requestId !== requestId) return s; // stale reply
-        return { ...s, [name]: settle(o, config, key) };
+        return { ...s, [name]: settle(o, input) };
       });
     });
   }, []);
 
-  const runAll = () => {
-    setFixtureMode(false);
+  const runAll = useCallback(() => {
     setPlaying(false);
-    setFrameIndex(0);
-    runSlot("baseline", pair.baseline);
+    runSlot("baseline", pair.baseline, draft);
     if (pair.noMitigation) {
       clients.current?.intervention.cancel();
       setSlots((s) => ({ ...s, intervention: { phase: "idle" } }));
     } else {
-      runSlot("intervention", pair.intervention);
+      runSlot("intervention", pair.intervention, draft);
     }
-  };
+  }, [pair, draft, runSlot]);
+
+  // Auto-run: engine runs take about a second, so re-run shortly after edits settle.
+  const lastAutoKey = useRef("");
+  useEffect(() => {
+    if (!autoRun || !clients.current) return;
+    const key = currentKeys.baseline + currentKeys.intervention;
+    if (key === lastAutoKey.current) return;
+    const id = window.setTimeout(() => {
+      lastAutoKey.current = key;
+      runAll();
+    }, lastAutoKey.current ? AUTO_RUN_DELAY_MS : 0);
+    return () => window.clearTimeout(id);
+  }, [autoRun, currentKeys, runAll]);
 
   const cancelAll = () => {
     clients.current?.baseline.cancel();
     clients.current?.intervention.cancel();
   };
 
-  // ---- Displayed data (engine results, or the explicitly labelled fixture) ----
-  const base = fixtureMode
-    ? { config: ILLUSTRATIVE_CONFIG as SimulationConfig, result: ILLUSTRATIVE_RUN.result as SimulationResult }
-    : successOf(slots.baseline);
-  const resp = fixtureMode ? null : successOf(slots.intervention);
-  const baseStale = !fixtureMode && slots.baseline.phase !== "idle" && "key" in slots.baseline && slots.baseline.key !== currentKeys.baseline;
-  const respStale = !fixtureMode && slots.intervention.phase !== "idle" && "key" in slots.intervention && slots.intervention.key !== currentKeys.intervention;
+  const runSensitivity = async () => {
+    const client = clients.current?.sensitivity;
+    if (!client) return;
+    const key = currentKeys.baseline;
+    const rows: SensitivityRow[] = SENSITIVITY_VARIANTS.map((v) => ({ label: v.label, result: null }));
+    setSensitivity({ key, rows: [...rows], running: true });
+    for (let i = 0; i < SENSITIVITY_VARIANTS.length; i += 1) {
+      const v = SENSITIVITY_VARIANTS[i]!;
+      const change = typeof v.change === "function" ? v.change(draft) : v.change;
+      const outcome = await client.run(buildScenarioPair({ ...draft, ...change }).baseline).outcome;
+      if (outcome.kind === "cancelled") return;
+      rows[i] = outcome.kind === "completed" && outcome.run.status === "success"
+        ? { label: v.label, result: outcome.run.result }
+        : { label: v.label, result: null, error: outcome.kind === "completed" ? outcome.run.status : "failed" };
+      setSensitivity({ key, rows: [...rows], running: i < SENSITIVITY_VARIANTS.length - 1 });
+    }
+  };
+
+  // ---- Displayed data ----
+  const base = successOf(slots.baseline);
+  const resp = successOf(slots.intervention);
+  const baseStale = slots.baseline.phase !== "idle" && slots.baseline.key !== currentKeys.baseline;
+  const respStale = slots.intervention.phase !== "idle" && slots.intervention.key !== currentKeys.intervention;
 
   const comparison = useMemo(
     () => (base && resp ? deriveComparison(base.config, base.result, resp.config, resp.result) : null),
@@ -208,14 +253,15 @@ export function App() {
   );
   const selectedRegion = base?.config.regions.find((r) => r.id === selectedId) ?? null;
   const rainNow = base
-    ? base.config.rainfall.find((r) => r.startTimeS <= cursorTimeS && cursorTimeS < r.endTimeS)?.intensityMmPerHour ??
-      null
+    ? base.config.rainfall.find((r) => r.startTimeS <= cursorTimeS && cursorTimeS < r.endTimeS)?.intensityMmPerHour ?? null
     : null;
   const thresholds = base?.result.riskThresholds ?? pair.baseline.riskThresholds;
   const runsForPanels = [
-    ...(base ? [{ label: fixtureMode ? "Fixture" : "Baseline", result: base.result }] : []),
+    ...(base ? [{ label: "Baseline", result: base.result }] : []),
     ...(resp ? [{ label: "Response", result: resp.result }] : []),
   ];
+  const isReplay = base?.draft.storm === "event-2022";
+  const verified = resp && !respStale ? resp.result : null;
 
   return (
     <div className="app">
@@ -224,22 +270,39 @@ export function App() {
           <span className="logo" aria-hidden="true">≋</span>
           <div>
             <h1>FlowShield</h1>
-            <p>Bengaluru · flood scenarios &amp; drainage atlas</p>
+            <p>Bengaluru flood simulation, early warning &amp; response planning</p>
           </div>
         </div>
         <div className="badges">
-          <span className="badge">Bengaluru terrain · {pair.baseline.regions.length} model cells</span>
-          <span className="badge">Model linear-storage-v1</span>
-          <span className={`badge ${ENGINE_PRESENT ? "badge-ok" : "badge-warn"}`}>
-            {ENGINE_PRESENT ? "Engine linked" : "Engine not integrated"}
-          </span>
+          <span className="badge">{pair.baseline.regions.length} cells · real terrain</span>
+          <span className="badge">Mass-conserving engine</span>
+          <span className="badge badge-ai">AI surrogate</span>
         </div>
       </header>
 
       <div className="layout">
         <aside className="sidebar">
-          <ScenarioForm draft={draft} onChange={setDraft} disabled={running} />
+          <PresetBar
+            activeId={presetId}
+            onPick={(d, id) => {
+              setDraft(d);
+              setPresetId(id);
+              setFrameIndex(0);
+            }}
+          />
+          <ScenarioForm
+            draft={draft}
+            onChange={(d) => {
+              setDraft(d);
+              setPresetId(null);
+            }}
+            disabled={false}
+          />
           <div className="actions">
+            <label className="check">
+              <input type="checkbox" checked={autoRun} onChange={(e) => setAutoRun(e.target.checked)} />
+              <span>Re-run automatically when inputs change</span>
+            </label>
             {running ? (
               <button type="button" className="btn btn-danger" onClick={cancelAll}>Cancel run</button>
             ) : (
@@ -247,26 +310,24 @@ export function App() {
                 {pair.noMitigation ? "Run simulation" : "Run baseline + response"}
               </button>
             )}
-            {!ENGINE_PRESENT ? (
-              <button type="button" className="btn btn-quiet" onClick={() => setFixtureMode(!fixtureMode)}>
-                {fixtureMode ? "Hide illustrative fixture" : "Preview UI with illustrative fixture"}
-              </button>
-            ) : null}
           </div>
         </aside>
 
         <main className="content">
-          <FloodAtlas
-            config={base?.config ?? pair.baseline}
-            baseline={base && baseFrame ? { result: base.result, frame: baseFrame } : null}
-            response={resp && respFrame ? { result: resp.result, frame: respFrame } : null}
-            thresholds={thresholds}
-            selectedId={selectedId}
-            onSelect={setSelectedId}
-            cursorTimeS={cursorTimeS}
-            rainNow={rainNow}
-            running={running}
-          />
+          <Suspense fallback={<div className="atlas atlas-loading">Loading map…</div>}>
+            <FloodAtlas
+              config={base?.config ?? pair.baseline}
+              baseline={base && baseFrame ? { result: base.result, frame: baseFrame } : null}
+              response={resp && respFrame ? { result: resp.result, frame: respFrame } : null}
+              thresholds={thresholds}
+              selectedId={selectedId}
+              onSelect={setSelectedId}
+              cursorTimeS={cursorTimeS}
+              rainNow={rainNow}
+              running={running}
+              showReports={isReplay}
+            />
+          </Suspense>
           {base && baseFrame ? (
             <TimeControls
               times={times}
@@ -280,84 +341,43 @@ export function App() {
             />
           ) : null}
           <div className="notice bengaluru-model-note">
-            <strong>Real map, exploratory simulation.</strong> The model covers a 10.5 × 7.5 km Bellandur–Marathahalli area
-            using 90 m <a href="https://open-meteo.com/en/docs/elevation-api" target="_blank" rel="noreferrer">Copernicus DEM / Open-Meteo</a> samples
+            <strong>Real map, exploratory simulation.</strong> The model covers a 10.5 × 7.5 km Bellandur–Marathahalli area using 90 m{" "}
+            <a href="https://open-meteo.com/en/docs/elevation-api" target="_blank" rel="noreferrer">Copernicus DEM / Open-Meteo</a> samples
             averaged into {GRID.cellM} m cells ({BENGALURU_TERRAIN.samplesPerCell} samples each). Rainfall, drain capacity,
             conductance, and blockages are assumptions you control. Published drain lines are geographic context, not a
             calibrated hydraulic network. Edges are open: water can leave toward lower ground outside the area, but
             inflow from beyond it is not simulated.
           </div>
-          {fixtureMode ? (
-            <div className="notice notice-warn" role="status">
-              <strong>Illustrative contract fixture, not engine output.</strong> These are hand-written
-              values for one sealed cell with no rain, used only to check the interface layout.
-            </div>
-          ) : null}
-          {!ENGINE_PRESENT && !fixtureMode && slots.baseline.phase === "idle" ? (
-            <div className="notice" role="status">
-              The simulation engine (<code>src/simulation/index.ts</code>) hasn't been integrated yet.
-              Running now will report that it's missing instead of showing results.
-            </div>
-          ) : null}
-          {running ? <div className="notice" role="status"><span className="spinner" /> Simulating…</div> : null}
-          {fixtureMode ? null : (
-            <>
-              <SlotProblem name="Baseline" slot={slots.baseline} />
-              <SlotProblem name="Response" slot={slots.intervention} />
-            </>
-          )}
-          {baseStale || respStale ? (
+          <SlotProblem name="Baseline" slot={slots.baseline} />
+          <SlotProblem name="Response" slot={slots.intervention} />
+          {(baseStale || respStale) && !running ? (
             <div className="notice notice-warn" role="status">
               Inputs have changed since these results were computed. Run again to update them.
             </div>
           ) : null}
 
+          <AIPanel
+            draft={draft}
+            verified={verified}
+            onApply={(d) => {
+              setDraft(d);
+              setPresetId(null);
+              if (!autoRun) window.setTimeout(() => document.querySelector<HTMLButtonElement>(".actions .btn-primary")?.click(), 0);
+            }}
+          />
+
           {base && baseFrame ? (
             <>
-              <details className="schematic">
-                <summary>Schematic grid view (side by side)</summary>
-              <div className="map-toolbar">
-                <div className="segmented" role="group" aria-label="Map colouring">
-                  {(["depth", "risk", "terrain"] as const).map((m) => (
-                    <button key={m} type="button" className={`chip${mapMode === m ? " is-on" : ""}`} onClick={() => setMapMode(m)}>
-                      {m === "depth" ? "Water depth" : m === "risk" ? "Risk level" : "Terrain"}
-                    </button>
-                  ))}
-                </div>
-                <MapLegend mode={mapMode} scaleMax={depthScaleMax(thresholds)} warning={thresholds.warningDepthM} critical={thresholds.criticalDepthM} />
-              </div>
-              <div className={`maps${resp ? " maps-2" : ""}`}>
-                <FloodMap
-                  title={fixtureMode ? "Illustrative fixture" : "Baseline"}
-                  subtitle={`${baseFrame.riskCounts.critical} critical · ${baseFrame.riskCounts.warning} warning`}
-                  regions={base.config.regions}
-                  outlets={base.config.boundaryOutlets}
-                  frame={baseFrame}
-                  thresholds={thresholds}
-                  mode={mapMode}
-                  selectedId={selectedId}
-                  onSelect={setSelectedId}
-                  stale={baseStale}
-                />
-                {resp && respFrame ? (
-                  <FloodMap
-                    title="With response plan"
-                    subtitle={`${respFrame.riskCounts.critical} critical · ${respFrame.riskCounts.warning} warning`}
-                    regions={resp.config.regions}
-                    outlets={resp.config.boundaryOutlets}
-                    frame={respFrame}
-                    thresholds={thresholds}
-                    mode={mapMode}
-                    selectedId={selectedId}
-                    onSelect={setSelectedId}
-                    stale={respStale}
-                  />
-                ) : null}
-              </div>
-              </details>
+              {isReplay ? <ValidationPanel result={base.result} /> : null}
+              <ComparisonPanel
+                outcome={comparison}
+                baseline={base.result}
+                intervention={resp?.result ?? null}
+                noMitigation={pair.noMitigation}
+              />
               <RiskTimeline
                 series={[
-                  { label: fixtureMode ? "Fixture" : "Baseline", result: base.result, dashed: false },
+                  { label: "Baseline", result: base.result, dashed: false },
                   ...(resp ? [{ label: "With response plan", result: resp.result, dashed: true }] : []),
                 ]}
                 rainfall={base.config.rainfall}
@@ -367,12 +387,6 @@ export function App() {
                   const idx = times.findIndex((x) => x >= t);
                   setFrameIndex(idx < 0 ? times.length - 1 : idx);
                 }}
-              />
-              <ComparisonPanel
-                outcome={comparison}
-                baseline={base.result}
-                intervention={resp?.result ?? null}
-                noMitigation={pair.noMitigation}
               />
               <div className="two-col">
                 <WarningTable
@@ -386,10 +400,57 @@ export function App() {
                 />
                 <RegionDetail region={selectedRegion} runs={runsForPanels} cursorTimeS={cursorTimeS} />
               </div>
+              <SensitivityPanel
+                rows={sensitivity.key === currentKeys.baseline ? sensitivity.rows : []}
+                running={sensitivity.running}
+                onRun={() => void runSensitivity()}
+              />
+              <HowItWorks />
+              <details className="schematic">
+                <summary>Schematic grid view (side by side)</summary>
+                <div className="map-toolbar">
+                  <div className="segmented" role="group" aria-label="Map colouring">
+                    {(["depth", "risk", "terrain"] as const).map((m) => (
+                      <button key={m} type="button" className={`chip${mapMode === m ? " is-on" : ""}`} onClick={() => setMapMode(m)}>
+                        {m === "depth" ? "Water depth" : m === "risk" ? "Risk level" : "Terrain"}
+                      </button>
+                    ))}
+                  </div>
+                  <MapLegend mode={mapMode} scaleMax={depthScaleMax(thresholds)} warning={thresholds.warningDepthM} critical={thresholds.criticalDepthM} />
+                </div>
+                <div className={`maps${resp ? " maps-2" : ""}`}>
+                  <FloodMap
+                    title="Baseline"
+                    subtitle={`${baseFrame.riskCounts.critical} critical · ${baseFrame.riskCounts.warning} warning`}
+                    regions={base.config.regions}
+                    outlets={base.config.boundaryOutlets}
+                    frame={baseFrame}
+                    thresholds={thresholds}
+                    mode={mapMode}
+                    selectedId={selectedId}
+                    onSelect={setSelectedId}
+                    stale={baseStale}
+                  />
+                  {resp && respFrame ? (
+                    <FloodMap
+                      title="With response plan"
+                      subtitle={`${respFrame.riskCounts.critical} critical · ${respFrame.riskCounts.warning} warning`}
+                      regions={resp.config.regions}
+                      outlets={resp.config.boundaryOutlets}
+                      frame={respFrame}
+                      thresholds={thresholds}
+                      mode={mapMode}
+                      selectedId={selectedId}
+                      onSelect={setSelectedId}
+                      stale={respStale}
+                    />
+                  ) : null}
+                </div>
+              </details>
               <DiagnosticsPanel runs={runsForPanels} />
             </>
           ) : !running ? (
-            <EmptyState />
+            <HowItWorks />
           ) : null}
         </main>
       </div>
@@ -414,7 +475,7 @@ function MapLegend(props: { mode: MapMode; scaleMax: number; warning: number; cr
     return (
       <div className="legend">
         <span className="legend-item"><span className="ramp ramp-terrain" /> low → high ground</span>
-        <span className="legend-item">Sampled DEM elevations</span>
+        <span className="legend-item">Mean DEM elevation per cell</span>
       </div>
     );
   }
@@ -427,24 +488,6 @@ function MapLegend(props: { mode: MapMode; scaleMax: number; warning: number; cr
       <span className="legend-item"><span className="swatch outline-critical" /> Critical</span>
       <span className="legend-item"><span className="swatch swatch-pump">P</span> Pump</span>
       <span className="legend-item"><span className="swatch swatch-drain">×</span> Drain blocked</span>
-    </div>
-  );
-}
-
-function EmptyState() {
-  return (
-    <div className="empty-state">
-      <h2>Set up a storm, then run it</h2>
-      <ol>
-        <li>Choose the rainfall profile and intensity, and the condition of the district drains.</li>
-        <li>Add a response plan: mobile pumps and drain clearing.</li>
-        <li>Run it to simulate the baseline and the response side by side over the same storm.</li>
-      </ol>
-      <p className="muted">
-        Rain adds a calculated volume to each model cell. Water moves from higher to lower water surfaces
-        between connected blocks, drains and pumps remove tracked volume, and the warning is the
-        first time a block crosses the critical depth.
-      </p>
     </div>
   );
 }

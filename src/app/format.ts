@@ -32,8 +32,8 @@ export function formatSigned(value: number, unit: string, digits = 2): string {
 
 export function formatVolume(m3: number): string {
   const abs = Math.abs(m3);
-  if (abs >= 1e6) return `${(m3 / 1e6).toFixed(2)} million m³`;
-  if (abs >= 1000) return `${(m3 / 1000).toFixed(2)} ML`; // 1 ML = 1000 m³
+  if (abs >= 1e5) return `${(m3 / 1e6).toFixed(2)} million m³`;
+  if (abs >= 1000) return `${Math.round(m3).toLocaleString()} m³`;
   return `${m3.toFixed(abs < 1 ? 4 : 1)} m³`;
 }
 
