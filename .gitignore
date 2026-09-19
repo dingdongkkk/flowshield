@@ -8,3 +8,5 @@ tmp
 data/bengaluru/raw/*.kml
 data/bengaluru/raw/*-parts
 data/bengaluru/raw/osm-buildings.json
+.vercel
+.env*

@@ -127,7 +127,7 @@ def convert(path, name):
 
 def simplify_line(points, tolerance=3.0):
     """Display-only RDP in local metres; exact coordinates stay in full GeoJSON."""
-    if len(points) <= 2: return points
+    if len(points) <= 2: return [[round(p[0], 5), round(p[1], 5)] for p in points]
     xy = [(p[0] * GRID["metersPerDegreeLng"], p[1] * GRID["metersPerDegreeLat"]) for p in points]
     keep = {0, len(points) - 1}
     pending = [(0, len(points) - 1)]
@@ -146,8 +146,9 @@ def simplify_line(points, tolerance=3.0):
             keep.add(selected)
             pending.extend([(first, selected), (selected, last)])
     result = [points[i] for i in sorted(keep)]
-    if points[0] == points[-1] and len(result) < 4: return points
-    return result
+    if points[0] == points[-1] and len(result) < 4: result = points
+    # 5 decimal places is about 1 m: plenty for display, and much smaller files.
+    return [[round(p[0], 5), round(p[1], 5)] for p in result]
 
 
 def display_collection(collection, name):
