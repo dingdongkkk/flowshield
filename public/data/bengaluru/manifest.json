@@ -1,0 +1,52 @@
+{
+  "retrievedAt": "2026-09-19T15:02:39.722821+00:00",
+  "sources": [
+    {
+      "id": "stormwater-drains",
+      "title": "Bengaluru Stormwater Drains Map 2022",
+      "datasetUrl": "https://data.opencity.in/dataset/bengaluru-stormwater-drains-maps",
+      "downloadUrl": "https://data.opencity.in/dataset/fc97e05c-c54b-44e9-8d98-7663ee887922/resource/801779e6-ed81-457d-bd2a-7e3cc95ad1ee/download/e42be0cb-1bf4-4a7b-9c78-0c0dbdae3237.kml",
+      "resourceId": "801779e6-ed81-457d-bd2a-7e3cc95ad1ee",
+      "license": "Other (Public Domain)",
+      "resourceLastModified": "2025-11-25T12:19:23.760612",
+      "source": "KSRSAC via OpenCity",
+      "sha256": "f6d58112c467e6efd55a4a74e6225c68ac3d15457fa989d40faf1cc1c230865e",
+      "sourcePlacemarkCount": 6839,
+      "featureCount": 6839
+    },
+    {
+      "id": "lakes",
+      "title": "Bengaluru Urban Lakes (Tanks) Map",
+      "datasetUrl": "https://data.opencity.in/dataset/lakes-and-ponds-in-bengaluru-district",
+      "downloadUrl": "https://data.opencity.in/dataset/d4e99898-7e4d-486c-abd0-5aec637a36a8/resource/11617e96-5aa2-4f2d-8df3-89727b6a75f3/download/2556496f-b582-4345-afee-760aeae69823.kml",
+      "resourceId": "11617e96-5aa2-4f2d-8df3-89727b6a75f3",
+      "license": "Other (Public Domain)",
+      "resourceLastModified": "2025-11-25T15:05:36.190444",
+      "source": "KSRSAC via OpenCity",
+      "sha256": "421b6879702e2324926be95115d18f65274332120499535f1fdc0f374ffedbe5",
+      "sourcePlacemarkCount": 1356,
+      "featureCount": 1356
+    }
+  ],
+  "drainCounts": {
+    "primary": 163,
+    "secondary": 870,
+    "tertiary": 5806
+  },
+  "lakeCount": 1356,
+  "displaySimplificationM": 3,
+  "terrain": {
+    "source": "Copernicus DEM GLO-90 via Open-Meteo",
+    "url": "https://open-meteo.com/en/docs/elevation-api",
+    "sampleCount": 3483,
+    "samplesPerCell": 9
+  },
+  "coverageNote": "All features in the downloaded files; not a verified complete or current inventory of every Bengaluru drain.",
+  "missingHydraulics": [
+    "verified flow capacity",
+    "current blockage status",
+    "channel cross-sections",
+    "invert levels",
+    "live water levels"
+  ]
+}

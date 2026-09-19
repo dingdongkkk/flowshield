@@ -1,0 +1,9 @@
+node_modules
+dist
+tmp
+.DS_Store
+.playwright-cli
+.claude
+# Large source downloads; reproduce with: python3 data/bengaluru/fetch.py
+data/bengaluru/raw/*.kml
+data/bengaluru/raw/*-parts
