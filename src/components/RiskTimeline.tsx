@@ -66,7 +66,7 @@ export function RiskTimeline({ series, rainfall, cursorTimeS, onSeek }: Props) {
             className="rain-bar"
           />
         ))}
-        <text x={PAD.left - 6} y={16} className="axis-label" textAnchor="end">{maxRain} mm/h</text>
+        <text x={W - PAD.right} y={16} className="axis-label" textAnchor="end">rain, peak {maxRain} mm/h</text>
         {[...new Set([0, Math.round(yMax / 2), yMax])].map((v) => (
           <g key={v}>
             <line x1={PAD.left} x2={W - PAD.right} y1={y(v)} y2={y(v)} className="grid-line" />

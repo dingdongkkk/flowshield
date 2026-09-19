@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import type {
   CriticalCrossing,
   CriticalTimingComparison,
@@ -9,6 +9,21 @@ import type {
 } from "../shared/simulation";
 import { crossingTime } from "../app/comparison";
 import { formatDepth, formatDuration, formatModelTime } from "../app/format";
+import { buildingsIn, leadTimes, type LeadTime } from "../app/insights";
+
+function leadText(lead: LeadTime | undefined): { text: string; tone: "good" | "bad" | "neutral" } {
+  if (!lead) return { text: "—", tone: "neutral" };
+  switch (lead.kind) {
+    case "lead":
+      return { text: `${formatDuration(lead.leadS)} (warn T+${formatModelTime(lead.warningS)})`, tone: lead.leadS >= 1800 ? "good" : "neutral" };
+    case "within-frame":
+      return { text: `under ${formatDuration(lead.frameS)}`, tone: "bad" };
+    case "warning-only":
+      return { text: `warning only, T+${formatModelTime(lead.warningS)}`, tone: "neutral" };
+    case "none":
+      return { text: "—", tone: "neutral" };
+  }
+}
 
 interface Side {
   readonly result: SimulationResult;
@@ -68,6 +83,7 @@ function RiskNow({ state }: { state: RegionFrame | undefined }) {
 export function WarningTable(props: Props) {
   const { labels, baseline, intervention, comparison, cursorTimeS, selectedId, onSelect } = props;
   const [showAll, setShowAll] = useState(false);
+  const leads = useMemo(() => leadTimes(baseline.result), [baseline.result]);
 
   const bSummary = new Map(baseline.result.summary.regions.map((r) => [r.regionId, r]));
   const iSummary = new Map((intervention?.result.summary.regions ?? []).map((r) => [r.regionId, r]));
@@ -108,6 +124,8 @@ export function WarningTable(props: Props) {
                 <th>Region</th>
                 <th>Now{intervention ? " (baseline)" : ""}</th>
                 <th>Critical{intervention ? " (baseline)" : ""}</th>
+                <th>Warning lead time</th>
+                <th className="num">Buildings</th>
                 {intervention ? (
                   <>
                     <th>Now (response)</th>
@@ -132,6 +150,8 @@ export function WarningTable(props: Props) {
                     <td>{labels.get(id) ?? id}</td>
                     <td><RiskNow state={bNow.get(id)} /></td>
                     <td className="num">{b ? crossingText(b.firstCritical, cursorTimeS) : "—"}</td>
+                    {(() => { const l = leadText(leads.get(id)); return <td className={`tone-${l.tone}`}>{l.text}</td>; })()}
+                    <td className="num">{buildingsIn(id).toLocaleString()}</td>
                     {intervention ? (
                       <>
                         <td><RiskNow state={iNow.get(id)} /></td>
@@ -152,8 +172,9 @@ export function WarningTable(props: Props) {
         </button>
       ) : null}
       <p className="footnote">
-        Warning time = first accepted integration step at or above the critical depth, from the start
-        of the run. It is resolved to one step, not interpolated, and it is not a validated forecast.
+        Critical time = first engine step at or above the critical depth (resolved to one step). Lead time = critical time
+        minus the first saved frame at warning depth, so it is accurate to one output interval. Buildings = mapped
+        OpenStreetMap buildings in the cell (not people). None of this is a validated forecast.
       </p>
     </section>
   );

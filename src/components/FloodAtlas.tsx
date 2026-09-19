@@ -22,6 +22,8 @@ import type {
 import { BENGALURU_CELLS, localToLngLat } from "../app/bengaluru";
 import { formatDepth, formatModelTime, formatSigned } from "../app/format";
 import { crossingText } from "./WarningTable";
+import { EVENT_2022 } from "../data/event-2022";
+import { buildingsCriticalNow, buildingsIn } from "../app/insights";
 
 /**
  * Interactive flood atlas. Key-free sources only: OpenFreeMap / CARTO vector
@@ -47,6 +49,8 @@ interface Props {
   readonly cursorTimeS: number;
   readonly rainNow: number | null;
   readonly running: boolean;
+  /** Show places reported flooded on 4-5 Sep 2022. */
+  readonly showReports: boolean;
 }
 
 // Vite pre-bundles maplibre-gl, which breaks its relative worker lookup;
@@ -225,6 +229,24 @@ function addOverlays(map: MapLibreMap, config: SimulationConfig) {
   });
   map.addLayer({ id: "extent", type: "line", source: "extent", paint: { "line-color": "#fbbf24", "line-width": 1.6, "line-dasharray": [3, 2] } });
 
+  map.addSource("reports", {
+    type: "geojson",
+    data: {
+      type: "FeatureCollection",
+      features: EVENT_2022.reportedFloodedPlaces.map((p) => ({
+        type: "Feature" as const, properties: { name: p.name }, geometry: { type: "Point" as const, coordinates: [p.lng, p.lat] },
+      })),
+    },
+  });
+  map.addLayer({
+    id: "reports", type: "circle", source: "reports", layout: { visibility: "none" },
+    paint: {
+      "circle-radius": ["interpolate", ["linear"], ["zoom"], 10, 5, 15, 12] as ExpressionSpecification,
+      "circle-color": "#fde047", "circle-opacity": 0.9,
+      "circle-stroke-color": "#111827", "circle-stroke-width": 2.5,
+    },
+  });
+
   map.addSource("markers", { type: "geojson", data: { type: "FeatureCollection", features: [] } });
   map.addLayer({
     id: "markers", type: "circle", source: "markers",
@@ -269,7 +291,6 @@ export function FloodAtlas(props: Props) {
       attributionControl: { compact: true, customAttribution: ATTR_DRAINS },
     });
     mapRef.current = map;
-    if (import.meta.env.DEV) (window as unknown as { __atlas?: MapLibreMap }).__atlas = map;
     map.addControl(new NavigationControl({ visualizePitch: true }), "top-right");
     map.addControl(new ScaleControl({ unit: "metric" }), "bottom-right");
     map.addControl(new FullscreenControl(), "top-right");
@@ -353,6 +374,12 @@ export function FloodAtlas(props: Props) {
     if (!map || !ready) return;
     map.setLayoutProperty("cells-extrusion", "visibility", threeD && hasResults ? "visible" : "none");
   }, [threeD, hasResults, ready]);
+
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || !ready) return;
+    map.setLayoutProperty("reports", "visibility", props.showReports ? "visible" : "none");
+  }, [props.showReports, ready]);
 
   // ---- layer toggles ----
   useEffect(() => {
@@ -450,6 +477,7 @@ export function FloodAtlas(props: Props) {
             <>
               <div className="is-critical"><span>Critical</span><strong>{counts.critical}</strong></div>
               <div className="is-warning"><span>Warning</span><strong>{counts.warning}</strong></div>
+              {shown ? <div><span>Buildings in critical cells</span><strong>{buildingsCriticalNow(shown.frame).toLocaleString()}</strong></div> : null}
             </>
           ) : null}
         </div>
@@ -539,6 +567,7 @@ export function FloodAtlas(props: Props) {
               <span><i className="line" style={{ background: DRAIN_COLORS.tertiary }} />Tertiary</span>
             </>
           ) : null}
+          {props.showReports ? <span><i className="dot" style={{ background: "#fde047", boxShadow: "0 0 0 2px #111827" }} />Reported flooded, Sep 2022</span> : null}
           <span><i className="dot" style={{ background: "#8b5cf6" }} />Pump</span>
           <span><i className="dot" style={{ background: "#06b6d4" }} />Upgraded drains</span>
           <span><i className="line" style={{ background: "#4ade80" }} />Detention cell</span>
@@ -554,6 +583,7 @@ export function FloodAtlas(props: Props) {
           <span className="muted">
             Ground {hoverRegion.terrainElevationM.toFixed(0)} m
             {hoverGeo ? ` · ${(hoverGeo.mappedDrainLengthM / 1000).toFixed(1)} km drains mapped` : ""}
+            {` · ${buildingsIn(hoverRegion.id).toLocaleString()} buildings`}
           </span>
           {bState ? (
             <div className="atlas-tip-row">

@@ -7,7 +7,10 @@
     "dev": "vite",
     "build": "tsc --noEmit -p tsconfig.json && vite build",
     "typecheck": "tsc --noEmit -p tsconfig.json",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "test": "node src/simulation/verify.mjs",
+    "train": "node scripts/train-surrogate.mjs 4000",
+    "data": "python3 data/bengaluru/fetch.py && python3 data/bengaluru/fetch_event_2022.py && python3 data/bengaluru/build_exposure.py"
   },
   "dependencies": {
     "maplibre-gl": "^6.10.0",
