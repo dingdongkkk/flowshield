@@ -7,7 +7,7 @@ Time marks are targets.
 | --- | --- | --- |
 | 0:00 | Page loads; the map flies into Bellandur in 3D | "FlowShield predicts where Bengaluru floods, when, and what would help. This is Bellandur–Marathahalli: real terrain, 6,800 mapped drains, 1,300 lakes." |
 | 0:15 | Click **Heavy storm**; press play at 4× | "A 90 mm/h storm. Rain adds volume to each 500 m cell, and water flows down the water-surface gradient. Water piles up in the low valley past Bellandur." |
-| 0:40 | Pause at about T+35 min; point at the HUD and the early-warnings table | "29 cells go critical, the first at T+32 minutes, about 6,500 buildings. Each cell passes its warning depth about 16 minutes earlier. That is the lead time a warning system gets." |
+| 0:40 | Pause at about T+35 min; point at the HUD and the early-warnings table | "29 cells go critical, the first at T+32 minutes. The HUD counts the buildings in critical cells live. Each cell passes its warning depth about 16 minutes earlier. That is the lead time a warning system gets." |
 | 1:00 | Switch to **Difference** | "Same storm, with bigger drains in the low cells and detention on high ground. Teal is less water, orange is where detention holds it back. Peak depth falls by about 20 cm, 900,000 m³ less standing water." |
 | 1:20 | Scroll to the AI panel | "Our AI component is a neural network trained on 4,000 engine runs. It predicts outcomes in microseconds, to within about 6 cm on runs it never saw, so it can search 600 response plans instantly." |
 | 1:35 | Click **Apply & verify** on a plan | "The engine then checks the plan it picked. The estimate and the real result are shown side by side." |
