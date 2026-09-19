@@ -1,5 +1,7 @@
 # FlowShield
 
+**Live demo: https://flowshield-app.vercel.app**
+
 **Predict the flood. Protect the future.** A flood simulation and early-warning dashboard for
 Bellandur–Marathahalli, Bengaluru, built for Hack-a-Matics 2026 (problem statement FLOWSHIELD, theme VECTOR).
 
