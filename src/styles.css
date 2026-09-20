@@ -834,3 +834,27 @@ tbody tr:nth-child(even) { background: color-mix(in srgb, var(--surface-2) 45%, 
 .stats { grid-template-columns: repeat(auto-fit, minmax(clamp(150px, 45%, 190px), 1fr)); }
 .stat-values { flex-wrap: wrap; row-gap: 2px; }
 .ai-est dl { grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); }
+
+/* Header labels must not look like buttons: only "Presentation mode" is clickable. */
+.badges .badge {
+  background: color-mix(in srgb, var(--surface-2) 80%, transparent);
+  border: 1px solid var(--border);
+  color: var(--muted);
+  font-weight: 500;
+  cursor: default;
+}
+.badges .badge-ai {
+  background: color-mix(in srgb, #7c3aed 10%, var(--surface));
+  border-color: color-mix(in srgb, #7c3aed 32%, var(--border));
+  color: color-mix(in srgb, #7c3aed 72%, var(--text));
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.badges .badge-ai::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #7c3aed, #2563eb);
+}

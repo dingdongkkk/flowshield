@@ -6,14 +6,13 @@ import json, math, re
 from xml.sax.saxutils import escape
 from reportlab.lib import colors
 from reportlab.lib.styles import ParagraphStyle
-from reportlab.lib.enums import TA_LEFT
+from reportlab.lib.enums import TA_LEFT, TA_RIGHT
 from reportlab.lib.pagesizes import A4
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, PageBreak, Table, TableStyle, KeepTogether, Flowable
 from reportlab.graphics.shapes import Drawing, Rect, Line, String, Polygon
 from reportlab.graphics.charts.lineplots import LinePlot
-from reportlab.graphics import renderPDF, renderSVG
 
 ROOT = Path(__file__).resolve().parents[1]
 DATA = json.loads((ROOT/'docs/model-report-results.json').read_text())
@@ -34,6 +33,7 @@ styles={
  'h1':ParagraphStyle('H1',fontName='Bold',fontSize=24,leading=29,textColor=NAVY,spaceAfter=15),
  'h2':ParagraphStyle('H2',fontName='Bold',fontSize=12.3,leading=17,textColor=TEAL,spaceBefore=10,spaceAfter=6),
  'eq':ParagraphStyle('Equation',fontName='Body',fontSize=11,leading=18,textColor=NAVY),
+ 'eqnum':ParagraphStyle('EquationNumber',fontName='Body',fontSize=8,leading=11.5,textColor=MUTED,alignment=TA_RIGHT),
  'cell':ParagraphStyle('Cell',fontName='Body',fontSize=8.5,leading=12,textColor=INK),
  'head':ParagraphStyle('TableHead',fontName='Bold',fontSize=8.3,leading=11,textColor=colors.white),
  'code':ParagraphStyle('Code',fontName='Mono',fontSize=8.1,leading=12,textColor=NAVY,spaceAfter=7),
@@ -44,13 +44,13 @@ def p(text,style='body'): return Paragraph(text,styles[style])
 def add(text,style='body'): story.append(p(text,style))
 def sub(title,text=None): add(title,'h2'); text is not None and add(text)
 def eq(text,n):
- t=Table([[p(text,'eq'),p(f'({n})','small')]],colWidths=[WIDTH-44,24]);t.setStyle(TableStyle([('BACKGROUND',(0,0),(-1,-1),LIGHT),('BOX',(0,0),(-1,-1),.4,LINE),('VALIGN',(0,0),(-1,-1),'MIDDLE'),('LEFTPADDING',(0,0),(-1,-1),10),('TOPPADDING',(0,0),(-1,-1),9),('BOTTOMPADDING',(0,0),(-1,-1),9)]));story.extend([t,Spacer(1,9)])
+ t=Table([[p(text,'eq'),p(f'({n})','eqnum')]],colWidths=[WIDTH-48,48]);t.setStyle(TableStyle([('BACKGROUND',(0,0),(-1,-1),LIGHT),('BOX',(0,0),(-1,-1),.4,LINE),('VALIGN',(0,0),(-1,-1),'MIDDLE'),('LEFTPADDING',(0,0),(-1,-1),10),('LEFTPADDING',(1,0),(1,0),4),('RIGHTPADDING',(1,0),(1,0),10),('TOPPADDING',(0,0),(-1,-1),9),('BOTTOMPADDING',(0,0),(-1,-1),9)]));story.extend([t,Spacer(1,9)])
 def table(headers,rows,widths=None,size=8.5):
  if widths is None: widths=[WIDTH/len(headers)]*len(headers)
  data=[[p(x,'head') for x in headers]]+[[p(str(x),'cell') for x in row] for row in rows]
  t=Table(data,colWidths=widths,repeatRows=1,hAlign='LEFT');t.setStyle(TableStyle([('BACKGROUND',(0,0),(-1,0),NAVY),('ROWBACKGROUNDS',(0,1),(-1,-1),[colors.white,LIGHT]),('VALIGN',(0,0),(-1,-1),'TOP'),('LINEBELOW',(0,0),(-1,0),.6,NAVY),('LINEBELOW',(0,1),(-1,-1),.3,LINE),('TOPPADDING',(0,0),(-1,-1),6),('BOTTOMPADDING',(0,0),(-1,-1),6),('LEFTPADDING',(0,0),(-1,-1),8),('RIGHTPADDING',(0,0),(-1,-1),8)]));story.extend([t,Spacer(1,8)])
 def callout(title,text):
- t=Table([[p(title,'h2')],[p(text)]],colWidths=[WIDTH]);t.setStyle(TableStyle([('BACKGROUND',(0,0),(-1,-1),LIGHT),('LINEBEFORE',(0,0),(0,-1),3,TEAL),('LEFTPADDING',(0,0),(-1,-1),12),('RIGHTPADDING',(0,0),(-1,-1),12),('TOPPADDING',(0,0),(-1,-1),5),('BOTTOMPADDING',(0,0),(-1,-1),5)]));story.extend([t,Spacer(1,8)])
+ t=Table([[p(title,'h2')],[p(text)]],colWidths=[WIDTH],splitByRow=0);t.setStyle(TableStyle([('BACKGROUND',(0,0),(-1,-1),LIGHT),('LINEBEFORE',(0,0),(0,-1),3,TEAL),('LEFTPADDING',(0,0),(-1,-1),12),('RIGHTPADDING',(0,0),(-1,-1),12),('TOPPADDING',(0,0),(-1,-1),5),('BOTTOMPADDING',(0,0),(-1,-1),5)]));story.extend([t,Spacer(1,8)])
 def page(kicker,title):
  if story:story.append(PageBreak())
  page_titles.append(title);add(kicker.upper(),'kicker');add(title,'h1')
@@ -97,7 +97,7 @@ add('How do rainfall, terrain and drainage interact, and what changes when a res
 story.append(network())
 callout('What this report establishes','The implemented model uses consistent physical units, conservative inter-region transfers, limited withdrawals and observable water-balance errors. The report explains these choices directly from the current code; it does not invent a development history or claim field validation.')
 table(['Model domain','Default scenario','Verified implementation'],[['315 cells / 78.75 km²','Peak depth: 1.577 → 1.363 m','21 automated checks pass'],['500 m cells / 594 connections','Cells ever critical: 29 → 29','Contract 1.0 / TypeScript engine']],[157,184,WIDTH-341])
-sub('Reading guide','02 Variables and assumptions · 03 Head and flow · 04 Sources and controls · 05 Conservative update · 06 Time and stability · 07 Risk and comparison · 08 Bengaluru data · 09 Computed results · 10 Verification · 11 AI surrogate · 12 Limits and defence · 13 Sources and reproducibility.')
+sub('Reading guide by section','01 Variables and assumptions · 02 Head and flow · 03 Sources and controls · 04 Conservative update · 05 Time and stability · 06 Risk and comparison · 07 Bengaluru data · 08 Computed results · 09 Verification · 10 Numerical evidence · 11 AI surrogate · 12 Limits and defence · 13 Sources and reproducibility.')
 add('Interpretation: this is an exploratory scenario simulator, not a validated flood forecast, street-scale inundation model, or evacuation system. All numerical results identified as computed were produced from the recorded implementation snapshot.','small')
 
 page('01 / Representation','State, variables and units')
@@ -221,7 +221,7 @@ sub('High-value next steps','1. Obtain defensible lake stage-storage curves, out
 callout('A concise explanation for judges','We store water as volume in connected regions. Rain adds volume; surface-head differences request transfers. All outgoing processes share the available water through one limiter, so volume cannot be spent twice. We compare the same storm with different interventions, verify numerical accounting, and clearly separate those calculations from unvalidated real-world predictions.')
 
 page('13 / Audit trail','Sources and reproducibility')
-add('Primary evidence is the repository implementation, inspected on 20 September 2026. The earlier third-party modelling document is not a source for our equations or claims. No authorship, team name or organizer requirement beyond the supplied project reference has been invented.')
+add('Equations and implementation claims are traced to the repository sources below, inspected on 20 September 2026. Recorded engine outputs and source hashes identify the computation used for the results tables and chart.')
 refs=[
  ('S1','src/simulation/index.ts','Implemented update, limiter, time stepping, event order and diagnostics.'),
  ('S2','src/shared/simulation.ts; src/simulation/validation.ts','Contract, units, ranges, canonical copies and structured errors.'),
@@ -253,5 +253,4 @@ class CheckedDoc(SimpleDocTemplate):
 
 doc=CheckedDoc(str(OUT/'FLOWSHIELD_Mathematical_Report.pdf'),pagesize=A4,rightMargin=46,leftMargin=46,topMargin=54,bottomMargin=56,title='FLOWSHIELD - Mathematics, Numerical Method and Verification',author='FLOWSHIELD project',subject='Implementation-grounded mathematical report; linear-storage-v1')
 doc.build(story,onFirstPage=footer,onLaterPages=footer)
-renderPDF.drawToFile(chart(),str(OUT/'flood-progression-chart.pdf'))
 print('Built',OUT/'FLOWSHIELD_Mathematical_Report.pdf')
