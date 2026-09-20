@@ -1,0 +1,194 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>FlowShield — submission slides</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --navy: #0c1c33; --card: #16304d; --deep: #065a82; --teal: #1c7293;
+    --mint: #2fc4a6; --ice: #d7e6f2; --muted: #8fa6bc; --ink: #12212f;
+    --grey: #5a6b7b; --panel: #f3f7fa;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #05070c; font-family: Inter, system-ui, sans-serif; overflow: hidden; }
+  /* Slides are authored at 1280x720 and scaled to fit any screen. */
+  .stage { position: fixed; inset: 0; display: grid; place-items: center; }
+  .slide {
+    position: absolute; width: 1280px; height: 720px; padding: 56px 64px;
+    transform: scale(var(--s, 1)); opacity: 0; pointer-events: none; transition: opacity 0.25s ease;
+    display: flex; flex-direction: column;
+  }
+  .slide.on { opacity: 1; pointer-events: auto; }
+  .dark { background: var(--navy); color: #fff; }
+  .light { background: #fff; color: var(--ink); }
+  h1 { font-size: 70px; font-weight: 700; letter-spacing: -0.03em; line-height: 1; }
+  h2 { font-size: 40px; font-weight: 700; letter-spacing: -0.02em; }
+  .tag { font-size: 25px; font-style: italic; color: var(--mint); margin-top: 14px; }
+  .lede { font-size: 18px; color: var(--ice); line-height: 1.5; margin-top: 16px; max-width: 700px; }
+  .meta { font-size: 16px; color: var(--muted); margin-top: 22px; }
+  .meta b { color: #fff; font-weight: 600; }
+  .row { display: flex; gap: 28px; }
+  .grow { flex: 1; }
+  .story {
+    width: 360px; background: var(--card); border-radius: 16px; padding: 26px 28px;
+  }
+  .kicker { font-size: 13px; font-weight: 700; letter-spacing: 0.12em; color: var(--mint); }
+  .story .huge { font-size: 52px; font-weight: 700; letter-spacing: -0.02em; margin: 10px 0 12px; }
+  .story p { font-size: 15.5px; color: var(--ice); line-height: 1.5; }
+  .facts { display: flex; gap: 56px; margin-top: 44px; }
+  .facts b { display: block; font-size: 29px; color: var(--mint); letter-spacing: -0.02em; }
+  .facts span { font-size: 14px; color: var(--muted); }
+  .links { font-size: 15px; color: var(--ice); margin-top: auto; }
+  .cards { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 26px; }
+  .card { background: var(--card); border-radius: 14px; padding: 22px 24px; }
+  .card h3 { font-size: 22px; font-weight: 650; display: flex; align-items: center; gap: 12px; }
+  .n { width: 30px; height: 30px; border-radius: 50%; display: grid; place-items: center; font-size: 15px; font-weight: 700; }
+  .card p { font-size: 14.5px; color: var(--ice); line-height: 1.5; margin-top: 12px; }
+  .panels { display: grid; grid-template-columns: 1fr 390px; gap: 24px; margin-top: 26px; align-items: start; }
+  .panel { background: var(--panel); border-radius: 14px; padding: 22px 26px; }
+  .panel.dark { background: #0c2a45; }
+  .panel .kicker { color: var(--deep); }
+  .panel.dark .kicker { color: var(--mint); }
+  ul { list-style: none; margin-top: 16px; display: grid; gap: 11px; }
+  li { display: grid; grid-template-columns: 22px 1fr; font-size: 15px; line-height: 1.35; }
+  li::before { content: "✓"; color: var(--mint); font-weight: 700; }
+  .panel.dark li { color: #fff; font-size: 16px; }
+  li b { font-weight: 650; }
+  li span { color: var(--grey); }
+  .note { font-size: 13.5px; font-style: italic; color: #9fc7dc; margin-top: 18px; line-height: 1.45; }
+  .foot { font-size: 14px; color: var(--grey); margin-top: auto; }
+  .foot.mint { color: var(--mint); font-style: italic; font-size: 16px; }
+  .shot { margin-top: 26px; border-radius: 14px; overflow: hidden; height: 232px; position: relative; }
+  .shot img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .shot figcaption {
+    position: absolute; left: 0; right: 0; bottom: 0; padding: 26px 20px 10px;
+    font-size: 13px; color: var(--ice);
+    background: linear-gradient(transparent, rgb(12 28 51 / 92%));
+  }
+  .results { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-top: 22px; }
+  .result { background: rgb(47 196 166 / 10%); border-radius: 12px; padding: 16px 20px; }
+  .result b { display: block; font-size: 30px; font-weight: 700; color: var(--mint); letter-spacing: -0.02em; }
+  .result span { font-size: 14px; color: var(--ice); }
+  .counter { position: fixed; right: 18px; bottom: 14px; font-size: 12px; color: #43576e; }
+</style>
+</head>
+<body>
+<div class="stage">
+  <!-- 1 — title + problem -->
+  <section class="slide dark on">
+    <div class="row">
+      <div class="grow">
+        <h1>FlowShield</h1>
+        <p class="tag">Predict the flood. Protect the future.</p>
+        <p class="lede">Flood simulation, early warning and AI-assisted response planning for Bellandur–Marathahalli, Bengaluru.</p>
+        <p class="meta">Problem statement <b>FLOWSHIELD</b> &nbsp;·&nbsp; Theme <b>VECTOR</b></p>
+        <p class="meta">Team [name] · [member] · [member] · [member]</p>
+      </div>
+      <aside class="story">
+        <p class="kicker">5 SEPTEMBER 2022</p>
+        <p class="huge">131.6 mm</p>
+        <p>Bengaluru's wettest September day since 2014. Bellandur, Marathahalli and the Outer Ring Road went under water; people were evacuated by boat.</p>
+      </aside>
+    </div>
+    <div class="facts">
+      <div><b>10.5 × 7.5 km</b><span>real terrain modelled</span></div>
+      <div><b>315</b><span>cells of 500 m</span></div>
+      <div><b>0.5 s</b><span>per 3-hour simulation</span></div>
+    </div>
+    <figure class="shot">
+      <img src="deck/atlas.jpg" alt="FlowShield 3D flood atlas showing water depth over Bellandur" />
+      <figcaption>Live simulation over the real drainage network — 29 cells critical, 5,955 buildings exposed at T+1:40</figcaption>
+    </figure>
+    <p class="links">Live: flowshield-app.vercel.app &nbsp;·&nbsp; github.com/dingdongkkk/flowshield</p>
+  </section>
+
+  <!-- 2 — coverage -->
+  <section class="slide light">
+    <h2>Everything in the brief — plus all seven bonuses</h2>
+    <div class="panels">
+      <div class="panel">
+        <p class="kicker">CORE REQUIREMENTS</p>
+        <ul>
+          <li><span><b>Configurable rainfall</b> — steady / heavy / cloudburst, 5–200 mm/h, or the real Sept 2022 storm</span></li>
+          <li><span><b>City as connected regions</b> — 315 cells of 500 m, 4-neighbour flow, open boundaries</span></li>
+          <li><span><b>Accumulation and movement</b> — mass-conserving storage network, water balance to 10⁻⁶ m³</span></li>
+          <li><span><b>Drainage capacity and terrain</b> — per-cell drains; 90 m Copernicus DEM, 9 samples per cell</span></li>
+          <li><span><b>Water levels over time</b> — engine steps ≤ 1 s, saved frames played back in 3D</span></li>
+          <li><span><b>Safe / Warning / Critical</b> — 10 cm and 30 cm depth thresholds, adjustable</span></li>
+          <li><span><b>Time-based visualisation</b> — 3D atlas, time slider, flood-progression chart</span></li>
+          <li><span><b>Critical regions and time to critical</b> — warnings table with countdown and lead time</span></li>
+        </ul>
+      </div>
+      <div class="panel dark">
+        <p class="kicker">ALL 7 BONUS FEATURES</p>
+        <ul>
+          <li>Normal rainfall</li>
+          <li>Heavy rainfall</li>
+          <li>Drainage failure</li>
+          <li>Blocked drainage channel</li>
+          <li>Scenario comparison</li>
+          <li>Affected population (exposure)</li>
+          <li>Interactive time slider</li>
+        </ul>
+        <p class="note">78,375 mapped buildings counted per cell as the exposure measure.</p>
+      </div>
+    </div>
+    <p class="foot">Real data: 6,839 mapped stormwater drains · 1,356 lakes and tanks · Copernicus elevation · OpenStreetMap buildings</p>
+  </section>
+
+  <!-- 3 — beyond the brief -->
+  <section class="slide dark">
+    <h2>What we added beyond the brief</h2>
+    <div class="cards">
+      <div class="card">
+        <h3><span class="n" style="background:var(--teal)">1</span> AI surrogate</h3>
+        <p>Neural network trained on 4,000 of our own engine runs. Predicts peak depth within 5.6 cm on 572 held-out runs (R² 0.995) and scores 609 response plans instantly.</p>
+      </div>
+      <div class="card">
+        <h3><span class="n" style="background:var(--deep)">2</span> Response planning</h3>
+        <p>Drain upgrades, upstream detention, pumps and drain clearing, compared on the same storm: peak depth −21.5 cm, 0.85 million m³ less standing water.</p>
+      </div>
+      <div class="card">
+        <h3><span class="n" style="background:var(--teal)">3</span> Verification</h3>
+        <p>21 automated engine checks, water balance to 10⁻⁶ m³, convergence under a halved time step, and a sensitivity sweep: 29–31 cells whichever way assumptions move.</p>
+      </div>
+      <div class="card">
+        <h3><span class="n" style="background:var(--deep)">4</span> Reality check</h3>
+        <p>Replay of the real 4–5 Sept 2022 storm against reported flood sites: 3 of 5 hit, but 51% by chance — so we report it as not yet better than chance.</p>
+      </div>
+    </div>
+    <div class="results">
+      <div class="result"><b>16 min</b><span>typical warning lead time before a block turns critical</span></div>
+      <div class="result"><b>−21.5 cm</b><span>peak depth with the response plan, on the same storm</span></div>
+      <div class="result"><b>0.85 M m³</b><span>less standing water after three hours</span></div>
+    </div>
+    <p class="foot mint">The AI proposes; the physics decides — every number shown comes from the engine.</p>
+  </section>
+</div>
+<div class="counter"><span id="i">1</span> / 3 &nbsp;·&nbsp; ← → to move</div>
+<script>
+  const slides = [...document.querySelectorAll(".slide")];
+  let at = 0;
+  function fit() {
+    const s = Math.min(innerWidth / 1280, innerHeight / 720);
+    document.documentElement.style.setProperty("--s", s);
+  }
+  function show(next) {
+    at = Math.max(0, Math.min(slides.length - 1, next));
+    slides.forEach((s, i) => s.classList.toggle("on", i === at));
+    document.getElementById("i").textContent = at + 1;
+  }
+  addEventListener("resize", fit);
+  addEventListener("keydown", (e) => {
+    if (["ArrowRight", " ", "PageDown"].includes(e.key)) show(at + 1);
+    if (["ArrowLeft", "PageUp"].includes(e.key)) show(at - 1);
+  });
+  addEventListener("click", (e) => show(at + (e.clientX < innerWidth / 3 ? -1 : 1)));
+  fit();
+</script>
+</body>
+</html>
