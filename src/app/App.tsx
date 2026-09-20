@@ -27,7 +27,6 @@ import { WarningTable } from "../components/WarningTable";
 import { depthScaleMax } from "../components/colors";
 
 // MapLibre is large; load the atlas separately so the controls appear at once.
-const PresentationStage = lazy(() => import("../components/PresentationStage").then((m) => ({ default: m.PresentationStage })));
 const FloodAtlas = lazy(() => import("../components/FloodAtlas").then((m) => ({ default: m.FloodAtlas })));
 
 type SlotName = "baseline" | "intervention";
@@ -126,10 +125,6 @@ function SlotProblem({ name, slot }: { name: string; slot: Slot }) {
 }
 
 export function App() {
-  const [presentation, setPresentation] = useState(false);
-  const [controlsOpen, setControlsOpen] = useState(false);
-  const [aiOpen, setAiOpen] = useState(false);
-  const [evidenceOpen, setEvidenceOpen] = useState(false);
   const [draft, setDraft] = useState<ScenarioDraft>(DEFAULT_DRAFT);
   const [presetId, setPresetId] = useState<string | null>("heavy");
   const [autoRun, setAutoRun] = useState(true);
@@ -268,17 +263,8 @@ export function App() {
   const isReplay = base?.draft.storm === "event-2022";
   const verified = resp && !respStale ? resp.result : null;
 
-  const presentationReady = !!base && !baseStale && !running &&
-    (pair.noMitigation || (!!resp && !respStale && comparison?.ok === true));
-  const presentationResponse = pair.noMitigation ? base : resp;
-  const seek = (timeS: number) => {
-    setPlaying(false);
-    const index = times.findIndex((t) => t >= timeS);
-    setFrameIndex(index < 0 ? Math.max(0, times.length - 1) : index);
-  };
-
   return (
-    <div className={`app${presentation ? " is-presenting" : ""}`}>
+    <div className="app">
       <header className="topbar">
         <div className="brand">
           <span className="logo" aria-hidden="true">≋</span>
@@ -288,13 +274,6 @@ export function App() {
           </div>
         </div>
         <div className="badges">
-          <button type="button" className="btn btn-primary" aria-pressed={presentation}
-            onClick={() => {
-              if (!presentation) { setControlsOpen(false); setAiOpen(false); setEvidenceOpen(false); }
-              setPresentation(!presentation); setPlaying(false); window.scrollTo({ top: 0 });
-            }}>
-            {presentation ? "Exit presentation" : "Presentation mode"}
-          </button>
           <span className="badge">{pair.baseline.regions.length} cells · real terrain</span>
           <span className="badge">Mass-conserving engine</span>
           <span className="badge badge-ai">AI surrogate</span>
@@ -311,9 +290,6 @@ export function App() {
               setFrameIndex(0);
             }}
           />
-          <details className="scenario-disclosure" open={!presentation || controlsOpen}
-            onToggle={(e) => { if (presentation) setControlsOpen(e.currentTarget.open); }}>
-            <summary hidden={!presentation}>Scenario controls &amp; response plan</summary>
           <ScenarioForm
             draft={draft}
             onChange={(d) => {
@@ -335,23 +311,10 @@ export function App() {
               </button>
             )}
           </div>
-          </details>
         </aside>
 
         <main className="content">
-          {presentation ? (
-            <Suspense fallback={<div className="atlas atlas-loading">Loading comparison maps…</div>}>
-              <PresentationStage draft={draft} config={presentationReady && base ? base.config : pair.baseline}
-                baseline={presentationReady && base && baseFrame ? { result: base.result, frame: baseFrame } : null}
-                response={presentationReady && presentationResponse ? {
-                  result: presentationResponse.result,
-                  frame: frameAt(presentationResponse.result, cursorTimeS),
-                } : null}
-                selectedId={selectedId} onSelect={setSelectedId} cursorTimeS={cursorTimeS}
-                rainNow={rainNow} running={running} showReports={draft.storm === "event-2022"}
-                noMitigation={pair.noMitigation} onSeek={seek} />
-            </Suspense>
-          ) : <Suspense fallback={<div className="atlas atlas-loading">Loading map…</div>}>
+          <Suspense fallback={<div className="atlas atlas-loading">Loading map…</div>}>
             <FloodAtlas
               config={base?.config ?? pair.baseline}
               baseline={base && baseFrame ? { result: base.result, frame: baseFrame } : null}
@@ -364,8 +327,8 @@ export function App() {
               running={running}
               showReports={isReplay}
             />
-          </Suspense>}
-          {base && baseFrame && (!presentation || presentationReady) ? (
+          </Suspense>
+          {base && baseFrame ? (
             <TimeControls
               times={times}
               index={safeIndex}
@@ -377,11 +340,7 @@ export function App() {
               rainAtTime={rainNow}
             />
           ) : null}
-          {presentation ? <p className="presentation-assumptions">
-            Scenario simulation · assumed drain capacities · mapped drains and lakes provide context.
-            Lake storage and external inflow are not modelled. Not a validated forecast.
-          </p> : null}
-          <div className="notice bengaluru-model-note" hidden={presentation}>
+          <div className="notice bengaluru-model-note">
             <strong>Real map, exploratory simulation.</strong> The model covers a 10.5 × 7.5 km Bellandur–Marathahalli area using 90 m{" "}
             <a href="https://open-meteo.com/en/docs/elevation-api" target="_blank" rel="noreferrer">Copernicus DEM / Open-Meteo</a> samples
             averaged into {GRID.cellM} m cells ({BENGALURU_TERRAIN.samplesPerCell} samples each). Rainfall, drain capacity,
@@ -398,9 +357,6 @@ export function App() {
             </div>
           ) : null}
 
-          <details className="presentation-disclosure" open={!presentation || aiOpen}
-            onToggle={(e) => { if (presentation) setAiOpen(e.currentTarget.open); }}>
-            <summary hidden={!presentation}>AI plan search · apply &amp; verify a response</summary>
           <AIPanel
             draft={draft}
             verified={verified}
@@ -411,10 +367,6 @@ export function App() {
             }}
           />
 
-          </details>
-          <details className="presentation-disclosure" open={!presentation || evidenceOpen}
-            onToggle={(e) => { if (presentation) setEvidenceOpen(e.currentTarget.open); }}>
-            <summary hidden={!presentation}>Evidence &amp; model details</summary>
           {base && baseFrame ? (
             <>
               {isReplay ? <ValidationPanel result={base.result} /> : null}
@@ -501,7 +453,6 @@ export function App() {
           ) : !running ? (
             <HowItWorks />
           ) : null}
-          </details>
         </main>
       </div>
     </div>

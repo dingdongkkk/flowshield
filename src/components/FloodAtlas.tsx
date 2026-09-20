@@ -39,13 +39,6 @@ interface Side {
   readonly frame: SimulationFrame;
 }
 
-export interface AtlasCamera {
-  readonly center: [number, number];
-  readonly zoom: number;
-  readonly pitch: number;
-  readonly bearing: number;
-}
-
 interface Props {
   readonly config: SimulationConfig;
   readonly baseline: Side | null;
@@ -58,13 +51,6 @@ interface Props {
   readonly running: boolean;
   /** Show places reported flooded on 4-5 Sep 2022. */
   readonly showReports: boolean;
-  readonly presentation?: {
-    readonly overlay: "baseline" | "response";
-    readonly camera: AtlasCamera | null;
-    readonly onCameraChange: (camera: AtlasCamera) => void;
-    readonly threeD: boolean;
-    readonly colouring: Colouring;
-  };
 }
 
 // Vite pre-bundles maplibre-gl, which breaks its relative worker lookup;
@@ -279,11 +265,9 @@ export function FloodAtlas(props: Props) {
   const mapRef = useRef<MapLibreMap | null>(null);
   const [ready, setReady] = useState(0); // bumps after every style (re)load
   const [basemap, setBasemap] = useState<Basemap>("dark");
-  const [localThreeD, setThreeD] = useState(true);
+  const [threeD, setThreeD] = useState(true);
   const [overlay, setOverlay] = useState<Overlay>("baseline");
-  const [localColouring, setColouring] = useState<Colouring>("depth");
-  const threeD = props.presentation?.threeD ?? localThreeD;
-  const colouring = props.presentation?.colouring ?? localColouring;
+  const [colouring, setColouring] = useState<Colouring>("depth");
   const [layers, setLayers] = useState({ drains: true, lakes: true, relief: true });
   const [hover, setHover] = useState<{ id: string; x: number; y: number } | null>(null);
   const [mapError, setMapError] = useState("");
@@ -291,11 +275,7 @@ export function FloodAtlas(props: Props) {
   configRef.current = config;
   const onSelectRef = useRef(onSelect);
   onSelectRef.current = onSelect;
-  const presentationRef = useRef(props.presentation);
-  presentationRef.current = props.presentation;
-  const syncingCamera = useRef(false);
-
-  const effectiveOverlay: Overlay = props.presentation?.overlay ?? (response ? overlay : "baseline");
+  const effectiveOverlay: Overlay = response ? overlay : "baseline";
   const hasResults = baseline !== null;
   const shown = effectiveOverlay === "response" ? response : baseline;
 
@@ -312,19 +292,14 @@ export function FloodAtlas(props: Props) {
     mapRef.current = map;
     map.addControl(new NavigationControl({ visualizePitch: true }), "top-right");
     map.addControl(new ScaleControl({ unit: "metric" }), "bottom-right");
-    if (!presentationRef.current) map.addControl(new FullscreenControl(), "top-right");
+    map.addControl(new FullscreenControl(), "top-right");
     let introduced = false;
     map.on("style.load", () => {
       addOverlays(map, configRef.current);
       setReady((n) => n + 1);
       if (!introduced) {
         introduced = true;
-        const presentation = presentationRef.current;
-        if (presentation?.camera) map.jumpTo(presentation.camera);
-        else map.fitBounds(extentOf(configRef.current), {
-          padding: presentation ? 36 : 70, pitch: presentation ? 0 : 55,
-          bearing: presentation ? 0 : -20, duration: presentation ? 0 : 2600,
-        });
+        map.fitBounds(extentOf(configRef.current), { padding: 70, pitch: 55, bearing: -20, duration: 2600 });
       }
     });
     map.on("error", (e) => {
@@ -354,16 +329,6 @@ export function FloodAtlas(props: Props) {
       const id = e.features?.[0]?.properties.id;
       if (typeof id === "string") onSelectRef.current(id);
     });
-    map.on("move", (event) => {
-      if (!introduced || syncingCamera.current || !presentationRef.current ||
-          (event as typeof event & { presentationSync?: boolean }).presentationSync) return;
-      // Only the user's map drives the shared camera. Resize/style events on
-      // the follower must not feed an old camera back into an active gesture.
-      if (!event.originalEvent && presentationRef.current.camera) return;
-      const center = map.getCenter();
-      presentationRef.current.onCameraChange({ center: [center.lng, center.lat],
-        zoom: map.getZoom(), pitch: map.getPitch(), bearing: map.getBearing() });
-    });
     const resize = new ResizeObserver(() => map.resize());
     resize.observe(containerRef.current);
     return () => {
@@ -372,19 +337,6 @@ export function FloodAtlas(props: Props) {
       mapRef.current = null;
     };
   }, []);
-
-  useEffect(() => {
-    const map = mapRef.current;
-    const camera = props.presentation?.camera;
-    if (!map || !camera || !ready) return;
-    const center = map.getCenter();
-    if (Math.abs(center.lng - camera.center[0]) < 1e-8 && Math.abs(center.lat - camera.center[1]) < 1e-8 &&
-        Math.abs(map.getZoom() - camera.zoom) < 1e-8 && Math.abs(map.getPitch() - camera.pitch) < 1e-8 &&
-        Math.abs(map.getBearing() - camera.bearing) < 1e-8) return;
-    syncingCamera.current = true;
-    map.jumpTo(camera, { presentationSync: true });
-    syncingCamera.current = false;
-  }, [props.presentation?.camera, ready]);
 
   // ---- basemap switch ----
   const firstBasemap = useRef(true);
@@ -416,8 +368,7 @@ export function FloodAtlas(props: Props) {
     const map = mapRef.current;
     if (!map || previousThreeD.current === threeD) return;
     previousThreeD.current = threeD;
-    if (presentationRef.current) return; // Shared camera controls both views.
-    map.easeTo({ pitch: threeD ? 55 : 0, bearing: threeD ? map.getBearing() : 0, duration: presentationRef.current ? 0 : 900 });
+    map.easeTo({ pitch: threeD ? 55 : 0, bearing: threeD ? map.getBearing() : 0, duration: 900 });
   }, [threeD]);
 
   useEffect(() => {
@@ -515,7 +466,7 @@ export function FloodAtlas(props: Props) {
   const isDark = BASEMAPS[basemap].dark;
 
   return (
-    <section className={`atlas${isDark ? " atlas-dark" : ""}${props.presentation ? " atlas-present" : ""}`} aria-label={props.presentation ? `${props.presentation.overlay} flood map` : "Flood atlas"}>
+    <section className={`atlas${isDark ? " atlas-dark" : ""}`} aria-label="Flood atlas">
       <div ref={containerRef} className="atlas-map" />
 
       {/* Top-left: title + live readout */}
