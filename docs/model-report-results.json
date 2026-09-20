@@ -1,0 +1,1403 @@
+{
+  "generatedAt": "2026-09-20T03:38:16.698Z",
+  "sourceHashes": {
+    "src/simulation/index.ts": "0dff066be7d9a3f02057c9a78bf2e00bed00a1b6f9273dc8f5e8d805cecdf0d6",
+    "src/simulation/validation.ts": "81e2de5c6386ffe6838742f1e98aad3cd29d82e16af8917a6b228baee832d89b",
+    "src/shared/simulation.ts": "e36b4aeffcea85d9591b437ca88e56e15ae7af1bae2a3c90180904b8d0312f8d",
+    "src/app/scenarios.ts": "f747acbb242682b55d72ac460332c04b33d88d89e1c0d6d9288c1eaf7d58d12d",
+    "src/app/surrogate.ts": "0970146ec3abaa4b5cd462bb70a30d793358cc85a17a519dd758fc1acf6cfcdb",
+    "src/data/surrogate-model.json": "0d8437e23ae84edf6c71d37520f0f2abc6fc883a349470d939af7b36b413c087"
+  },
+  "draft": {
+    "storm": "heavy",
+    "peakIntensityMmPerHour": 90,
+    "stormDurationMin": 120,
+    "durationMin": 180,
+    "drainDesignMmPerHour": 20,
+    "basinDrainCondition": "working",
+    "drainFailureMin": 45,
+    "pumpCount": 3,
+    "pumpCapacityM3PerS": 0.4,
+    "pumpDeployMin": 30,
+    "clearDrainsAtMin": null,
+    "detentionShare": 0.6,
+    "detentionHoldPct": 85,
+    "drainUpgradeFactor": 3,
+    "warningDepthM": 0.1,
+    "criticalDepthM": 0.3,
+    "maxStepS": 1,
+    "conductanceScale": 1
+  },
+  "regionCount": 315,
+  "connectionCount": 594,
+  "outlets": 72,
+  "areaM2": 78750000,
+  "baseline": {
+    "everCriticalRegionCount": 29,
+    "peakCriticalRegionCount": 29,
+    "peakCriticalRegionCountTimeS": 4166,
+    "peakWaterDepthM": 1.5770625112972951,
+    "finalRiskCounts": {
+      "safe": 284,
+      "warning": 3,
+      "critical": 28
+    },
+    "finalBalance": {
+      "initialStorageM3": 0,
+      "rainfallInputM3": 7087500,
+      "drainedM3": 724817.2263610944,
+      "pumpedM3": 0,
+      "boundaryDischargeM3": 764838.2299832704,
+      "storageM3": 5597844.543656221,
+      "roundoffAddedM3": 7.241722881068477e-12,
+      "physicalResidualM3": 5.848705768585205e-07,
+      "numericalResidualM3": 5.848633351356394e-07,
+      "allowedErrorM3": 0.0070885
+    }
+  },
+  "response": {
+    "everCriticalRegionCount": 29,
+    "peakCriticalRegionCount": 29,
+    "peakCriticalRegionCountTimeS": 4989,
+    "peakWaterDepthM": 1.3625194801122844,
+    "finalRiskCounts": {
+      "safe": 284,
+      "warning": 4,
+      "critical": 27
+    },
+    "finalBalance": {
+      "initialStorageM3": 0,
+      "rainfallInputM3": 7087500,
+      "drainedM3": 1671605.8109462222,
+      "pumpedM3": 4766.13614208938,
+      "boundaryDischargeM3": 666554.0671261884,
+      "storageM3": 4744573.9857858615,
+      "roundoffAddedM3": 2.036066421297493e-12,
+      "physicalResidualM3": 3.6135315895080566e-07,
+      "numericalResidualM3": 3.613511228843844e-07,
+      "allowedErrorM3": 0.0070885
+    }
+  },
+  "diagnostics": {
+    "baseline": {
+      "acceptedSteps": 10800,
+      "smallestStepS": 1,
+      "largestStepS": 1,
+      "donorLimitedRegionSteps": 3021435,
+      "maxAbsolutePhysicalResidualM3": 5.85801899433136e-07,
+      "maxAbsoluteNumericalResidualM3": 5.857946577102549e-07
+    },
+    "response": {
+      "acceptedSteps": 10800,
+      "smallestStepS": 1,
+      "largestStepS": 1,
+      "donorLimitedRegionSteps": 2913679,
+      "maxAbsolutePhysicalResidualM3": 3.6228448152542114e-07,
+      "maxAbsoluteNumericalResidualM3": 3.6228244545899986e-07
+    }
+  },
+  "convergence": {
+    "stepS": 0.5,
+    "peakDepthM": 1.5771062905792919,
+    "criticalCount": 29,
+    "firstCritical": {
+      "status": "reached",
+      "timeS": 1901.5,
+      "previousSampleTimeS": 1901
+    }
+  },
+  "earliest": {
+    "label": "Block H17",
+    "baseline": {
+      "regionId": "r07-16",
+      "firstCritical": {
+        "status": "reached",
+        "timeS": 1903,
+        "previousSampleTimeS": 1902
+      },
+      "peakWaterDepthM": 0.9821996277515994,
+      "peakTimeS": 10443,
+      "finalWaterDepthM": 0.9806241813350429
+    },
+    "response": {
+      "regionId": "r07-16",
+      "firstCritical": {
+        "status": "reached",
+        "timeS": 2153,
+        "previousSampleTimeS": 2152
+      },
+      "peakWaterDepthM": 0.8789077902740557,
+      "peakTimeS": 9288,
+      "finalWaterDepthM": 0.8540535572910259
+    }
+  },
+  "series": [
+    {
+      "timeMin": 0,
+      "baselineCritical": 0,
+      "responseCritical": 0,
+      "baselineStoredM3": 0,
+      "responseStoredM3": 0
+    },
+    {
+      "timeMin": 1,
+      "baselineCritical": 0,
+      "responseCritical": 0,
+      "baselineStoredM3": 18449.077062179906,
+      "responseStoredM3": 14947.454608984577
+    },
+    {
+      "timeMin": 2,
+      "baselineCritical": 0,
+      "responseCritical": 0,
+      "baselineStoredM3": 36769.13075441619,
+      "responseStoredM3": 29667.64599194564
+    },
+    {
+      "timeMin": 3,
+      "baselineCritical": 0,
+      "responseCritical": 0,
+      "baselineStoredM3": 55086.9628167269,
+      "responseStoredM3": 44377.88630487848
+    },
+    {
+      "timeMin": 4,
+      "baselineCritical": 0,
+      "responseCritical": 0,
+      "baselineStoredM3": 73402.53846334078,
+      "responseStoredM3": 59078.08450766398
+    },
+    {
+      "timeMin": 5,
+      "baselineCritical": 0,
+      "responseCritical": 0,
+      "baselineStoredM3": 91715.8216668163,
+      "responseStoredM3": 73768.14745673722
+    },
+    {
+      "timeMin": 6,
+      "baselineCritical": 0,
+      "responseCritical": 0,
+      "baselineStoredM3": 110026.77509299415,
+      "responseStoredM3": 88447.97987027121
+    },
+    {
+      "timeMin": 7,
+      "baselineCritical": 0,
+      "responseCritical": 0,
+      "baselineStoredM3": 128335.39088289622,
+      "responseStoredM3": 103117.48429292302
+    },
+    {
+      "timeMin": 8,
+      "baselineCritical": 0,
+      "responseCritical": 0,
+      "baselineStoredM3": 146642.4616960379,
+      "responseStoredM3": 117776.56106017031
+    },
+    {
+      "timeMin": 9,
+      "baselineCritical": 0,
+      "responseCritical": 0,
+      "baselineStoredM3": 164948.33475837018,
+      "responseStoredM3": 132425.66776302148
+    },
+    {
+      "timeMin": 10,
+      "baselineCritical": 0,
+      "responseCritical": 0,
+      "baselineStoredM3": 183252.9902558568,
+      "responseStoredM3": 147066.72401787213
+    },
+    {
+      "timeMin": 11,
+      "baselineCritical": 0,
+      "responseCritical": 0,
+      "baselineStoredM3": 201556.40867637363,
+      "responseStoredM3": 161701.9533441339
+    },
+    {
+      "timeMin": 12,
+      "baselineCritical": 0,
+      "responseCritical": 0,
+      "baselineStoredM3": 219858.57079907894,
+      "responseStoredM3": 176331.97109362335
+    },
+    {
+      "timeMin": 13,
+      "baselineCritical": 0,
+      "responseCritical": 0,
+      "baselineStoredM3": 238159.4576839505,
+      "responseStoredM3": 190956.75120010148
+    },
+    {
+      "timeMin": 14,
+      "baselineCritical": 0,
+      "responseCritical": 0,
+      "baselineStoredM3": 256459.05066148355,
+      "responseStoredM3": 205576.2666967508
+    },
+    {
+      "timeMin": 15,
+      "baselineCritical": 0,
+      "responseCritical": 0,
+      "baselineStoredM3": 274757.3313225467,
+      "responseStoredM3": 220190.48969870282
+    },
+    {
+      "timeMin": 16,
+      "baselineCritical": 0,
+      "responseCritical": 0,
+      "baselineStoredM3": 313987.2997469475,
+      "responseStoredM3": 254477.36424750622
+    },
+    {
+      "timeMin": 17,
+      "baselineCritical": 0,
+      "responseCritical": 0,
+      "baselineStoredM3": 353106.5256248949,
+      "responseStoredM3": 288622.72631126194
+    },
+    {
+      "timeMin": 18,
+      "baselineCritical": 0,
+      "responseCritical": 0,
+      "baselineStoredM3": 392220.0076304076,
+      "responseStoredM3": 322758.4595101556
+    },
+    {
+      "timeMin": 19,
+      "baselineCritical": 0,
+      "responseCritical": 0,
+      "baselineStoredM3": 431328.14829324733,
+      "responseStoredM3": 356884.50202107185
+    },
+    {
+      "timeMin": 20,
+      "baselineCritical": 0,
+      "responseCritical": 0,
+      "baselineStoredM3": 470431.22913727385,
+      "responseStoredM3": 391000.79165408603
+    },
+    {
+      "timeMin": 21,
+      "baselineCritical": 0,
+      "responseCritical": 0,
+      "baselineStoredM3": 509529.2147373018,
+      "responseStoredM3": 425107.26582399383
+    },
+    {
+      "timeMin": 22,
+      "baselineCritical": 0,
+      "responseCritical": 0,
+      "baselineStoredM3": 548622.0690416442,
+      "responseStoredM3": 459203.861521604
+    },
+    {
+      "timeMin": 23,
+      "baselineCritical": 0,
+      "responseCritical": 0,
+      "baselineStoredM3": 587709.7553471162,
+      "responseStoredM3": 493290.51528477547
+    },
+    {
+      "timeMin": 24,
+      "baselineCritical": 0,
+      "responseCritical": 0,
+      "baselineStoredM3": 626792.2362734926,
+      "responseStoredM3": 527367.1631691742
+    },
+    {
+      "timeMin": 25,
+      "baselineCritical": 0,
+      "responseCritical": 0,
+      "baselineStoredM3": 665869.4737373835,
+      "responseStoredM3": 561433.7407187319
+    },
+    {
+      "timeMin": 26,
+      "baselineCritical": 0,
+      "responseCritical": 0,
+      "baselineStoredM3": 704941.4289254885,
+      "responseStoredM3": 595490.1829357808
+    },
+    {
+      "timeMin": 27,
+      "baselineCritical": 0,
+      "responseCritical": 0,
+      "baselineStoredM3": 744008.0622671961,
+      "responseStoredM3": 629536.4242508493
+    },
+    {
+      "timeMin": 28,
+      "baselineCritical": 0,
+      "responseCritical": 0,
+      "baselineStoredM3": 783069.3334064897,
+      "responseStoredM3": 663572.4087100385
+    },
+    {
+      "timeMin": 29,
+      "baselineCritical": 0,
+      "responseCritical": 0,
+      "baselineStoredM3": 822125.2011731231,
+      "responseStoredM3": 697598.3017909394
+    },
+    {
+      "timeMin": 30,
+      "baselineCritical": 0,
+      "responseCritical": 0,
+      "baselineStoredM3": 861175.6235530307,
+      "responseStoredM3": 731614.1344308911
+    },
+    {
+      "timeMin": 31,
+      "baselineCritical": 0,
+      "responseCritical": 0,
+      "baselineStoredM3": 931742.0332232763,
+      "responseStoredM3": 796036.2546387622
+    },
+    {
+      "timeMin": 32,
+      "baselineCritical": 1,
+      "responseCritical": 0,
+      "baselineStoredM3": 1002147.3251905525,
+      "responseStoredM3": 860279.1948871406
+    },
+    {
+      "timeMin": 33,
+      "baselineCritical": 1,
+      "responseCritical": 0,
+      "baselineStoredM3": 1072537.3047345395,
+      "responseStoredM3": 924499.3998182118
+    },
+    {
+      "timeMin": 34,
+      "baselineCritical": 1,
+      "responseCritical": 0,
+      "baselineStoredM3": 1142911.8206432187,
+      "responseStoredM3": 988696.6954888402
+    },
+    {
+      "timeMin": 35,
+      "baselineCritical": 1,
+      "responseCritical": 0,
+      "baselineStoredM3": 1213270.7163271548,
+      "responseStoredM3": 1052870.9023270924
+    },
+    {
+      "timeMin": 36,
+      "baselineCritical": 3,
+      "responseCritical": 1,
+      "baselineStoredM3": 1283613.8296215867,
+      "responseStoredM3": 1117021.8349796466
+    },
+    {
+      "timeMin": 37,
+      "baselineCritical": 3,
+      "responseCritical": 1,
+      "baselineStoredM3": 1353940.992578596,
+      "responseStoredM3": 1181149.302153429
+    },
+    {
+      "timeMin": 38,
+      "baselineCritical": 3,
+      "responseCritical": 2,
+      "baselineStoredM3": 1424252.0312489131,
+      "responseStoredM3": 1245253.1064513272
+    },
+    {
+      "timeMin": 39,
+      "baselineCritical": 4,
+      "responseCritical": 2,
+      "baselineStoredM3": 1494546.765452922,
+      "responseStoredM3": 1309333.0442018344
+    },
+    {
+      "timeMin": 40,
+      "baselineCritical": 5,
+      "responseCritical": 2,
+      "baselineStoredM3": 1564824.7852381065,
+      "responseStoredM3": 1373388.9052825011
+    },
+    {
+      "timeMin": 41,
+      "baselineCritical": 5,
+      "responseCritical": 2,
+      "baselineStoredM3": 1635085.7414746585,
+      "responseStoredM3": 1437420.2440491945
+    },
+    {
+      "timeMin": 42,
+      "baselineCritical": 5,
+      "responseCritical": 3,
+      "baselineStoredM3": 1705331.2196630328,
+      "responseStoredM3": 1501426.5911610625
+    },
+    {
+      "timeMin": 43,
+      "baselineCritical": 9,
+      "responseCritical": 5,
+      "baselineStoredM3": 1775561.6011496433,
+      "responseStoredM3": 1565407.7102851
+    },
+    {
+      "timeMin": 44,
+      "baselineCritical": 9,
+      "responseCritical": 5,
+      "baselineStoredM3": 1845776.6610268913,
+      "responseStoredM3": 1629363.3579063946
+    },
+    {
+      "timeMin": 45,
+      "baselineCritical": 11,
+      "responseCritical": 5,
+      "baselineStoredM3": 1915976.1509071952,
+      "responseStoredM3": 1693293.28310514
+    },
+    {
+      "timeMin": 46,
+      "baselineCritical": 12,
+      "responseCritical": 6,
+      "baselineStoredM3": 2018261.7399757328,
+      "responseStoredM3": 1788638.6446666643
+    },
+    {
+      "timeMin": 47,
+      "baselineCritical": 12,
+      "responseCritical": 8,
+      "baselineStoredM3": 2120418.848424134,
+      "responseStoredM3": 1883838.0306261794
+    },
+    {
+      "timeMin": 48,
+      "baselineCritical": 15,
+      "responseCritical": 11,
+      "baselineStoredM3": 2222548.373330565,
+      "responseStoredM3": 1978994.2495859908
+    },
+    {
+      "timeMin": 49,
+      "baselineCritical": 15,
+      "responseCritical": 12,
+      "baselineStoredM3": 2324650.0519759757,
+      "responseStoredM3": 2074106.620166513
+    },
+    {
+      "timeMin": 50,
+      "baselineCritical": 15,
+      "responseCritical": 12,
+      "baselineStoredM3": 2426723.612026342,
+      "responseStoredM3": 2169180.026603682
+    },
+    {
+      "timeMin": 51,
+      "baselineCritical": 15,
+      "responseCritical": 12,
+      "baselineStoredM3": 2528768.771136375,
+      "responseStoredM3": 2264219.7195402426
+    },
+    {
+      "timeMin": 52,
+      "baselineCritical": 17,
+      "responseCritical": 13,
+      "baselineStoredM3": 2630785.2365298974,
+      "responseStoredM3": 2359225.3464931496
+    },
+    {
+      "timeMin": 53,
+      "baselineCritical": 17,
+      "responseCritical": 14,
+      "baselineStoredM3": 2732772.704555254,
+      "responseStoredM3": 2454196.53800969
+    },
+    {
+      "timeMin": 54,
+      "baselineCritical": 17,
+      "responseCritical": 15,
+      "baselineStoredM3": 2834719.8909842577,
+      "responseStoredM3": 2549132.9150134083
+    },
+    {
+      "timeMin": 55,
+      "baselineCritical": 17,
+      "responseCritical": 15,
+      "baselineStoredM3": 2936599.5478648082,
+      "responseStoredM3": 2644034.088484116
+    },
+    {
+      "timeMin": 56,
+      "baselineCritical": 18,
+      "responseCritical": 15,
+      "baselineStoredM3": 3038410.385000262,
+      "responseStoredM3": 2738899.759601997
+    },
+    {
+      "timeMin": 57,
+      "baselineCritical": 20,
+      "responseCritical": 16,
+      "baselineStoredM3": 3140152.357231799,
+      "responseStoredM3": 2833731.1352993003
+    },
+    {
+      "timeMin": 58,
+      "baselineCritical": 20,
+      "responseCritical": 18,
+      "baselineStoredM3": 3241825.695836588,
+      "responseStoredM3": 2928528.3915009727
+    },
+    {
+      "timeMin": 59,
+      "baselineCritical": 22,
+      "responseCritical": 18,
+      "baselineStoredM3": 3343431.011003386,
+      "responseStoredM3": 3023291.1391435033
+    },
+    {
+      "timeMin": 60,
+      "baselineCritical": 22,
+      "responseCritical": 19,
+      "baselineStoredM3": 3444968.3855848047,
+      "responseStoredM3": 3118018.657298683
+    },
+    {
+      "timeMin": 61,
+      "baselineCritical": 23,
+      "responseCritical": 20,
+      "baselineStoredM3": 3525047.729630403,
+      "responseStoredM3": 3191587.401388457
+    },
+    {
+      "timeMin": 62,
+      "baselineCritical": 23,
+      "responseCritical": 20,
+      "baselineStoredM3": 3605153.8491945257,
+      "responseStoredM3": 3265198.324914591
+    },
+    {
+      "timeMin": 63,
+      "baselineCritical": 24,
+      "responseCritical": 20,
+      "baselineStoredM3": 3685209.982595279,
+      "responseStoredM3": 3338784.9223772413
+    },
+    {
+      "timeMin": 64,
+      "baselineCritical": 25,
+      "responseCritical": 20,
+      "baselineStoredM3": 3765216.0441175667,
+      "responseStoredM3": 3412346.936134715
+    },
+    {
+      "timeMin": 65,
+      "baselineCritical": 25,
+      "responseCritical": 20,
+      "baselineStoredM3": 3845171.860932046,
+      "responseStoredM3": 3485888.255345005
+    },
+    {
+      "timeMin": 66,
+      "baselineCritical": 26,
+      "responseCritical": 20,
+      "baselineStoredM3": 3925077.4317331365,
+      "responseStoredM3": 3559410.878184313
+    },
+    {
+      "timeMin": 67,
+      "baselineCritical": 26,
+      "responseCritical": 20,
+      "baselineStoredM3": 4004932.7612031866,
+      "responseStoredM3": 3632907.866144384
+    },
+    {
+      "timeMin": 68,
+      "baselineCritical": 26,
+      "responseCritical": 21,
+      "baselineStoredM3": 4084738.8609804357,
+      "responseStoredM3": 3706378.93340155
+    },
+    {
+      "timeMin": 69,
+      "baselineCritical": 28,
+      "responseCritical": 21,
+      "baselineStoredM3": 4164496.4828339736,
+      "responseStoredM3": 3779823.7868756508
+    },
+    {
+      "timeMin": 70,
+      "baselineCritical": 29,
+      "responseCritical": 22,
+      "baselineStoredM3": 4244205.636946307,
+      "responseStoredM3": 3853242.1260173996
+    },
+    {
+      "timeMin": 71,
+      "baselineCritical": 29,
+      "responseCritical": 23,
+      "baselineStoredM3": 4323866.331300826,
+      "responseStoredM3": 3926633.090350973
+    },
+    {
+      "timeMin": 72,
+      "baselineCritical": 29,
+      "responseCritical": 24,
+      "baselineStoredM3": 4403479.557816046,
+      "responseStoredM3": 3999983.5853579557
+    },
+    {
+      "timeMin": 73,
+      "baselineCritical": 29,
+      "responseCritical": 25,
+      "baselineStoredM3": 4483046.008700084,
+      "responseStoredM3": 4073287.978618158
+    },
+    {
+      "timeMin": 74,
+      "baselineCritical": 29,
+      "responseCritical": 25,
+      "baselineStoredM3": 4562565.649385053,
+      "responseStoredM3": 4146545.3889919077
+    },
+    {
+      "timeMin": 75,
+      "baselineCritical": 29,
+      "responseCritical": 25,
+      "baselineStoredM3": 4642038.435298304,
+      "responseStoredM3": 4219764.263512692
+    },
+    {
+      "timeMin": 76,
+      "baselineCritical": 29,
+      "responseCritical": 25,
+      "baselineStoredM3": 4689420.392088377,
+      "responseStoredM3": 4261412.869458502
+    },
+    {
+      "timeMin": 77,
+      "baselineCritical": 29,
+      "responseCritical": 25,
+      "baselineStoredM3": 4736900.503052617,
+      "responseStoredM3": 4303174.118895982
+    },
+    {
+      "timeMin": 78,
+      "baselineCritical": 29,
+      "responseCritical": 25,
+      "baselineStoredM3": 4784360.897794066,
+      "responseStoredM3": 4344910.8545993855
+    },
+    {
+      "timeMin": 79,
+      "baselineCritical": 29,
+      "responseCritical": 25,
+      "baselineStoredM3": 4831801.566417592,
+      "responseStoredM3": 4386645.210440885
+    },
+    {
+      "timeMin": 80,
+      "baselineCritical": 29,
+      "responseCritical": 25,
+      "baselineStoredM3": 4879227.413897961,
+      "responseStoredM3": 4428367.165326184
+    },
+    {
+      "timeMin": 81,
+      "baselineCritical": 29,
+      "responseCritical": 26,
+      "baselineStoredM3": 4926638.430714204,
+      "responseStoredM3": 4470064.551717541
+    },
+    {
+      "timeMin": 82,
+      "baselineCritical": 29,
+      "responseCritical": 28,
+      "baselineStoredM3": 4974028.604642798,
+      "responseStoredM3": 4511737.402319589
+    },
+    {
+      "timeMin": 83,
+      "baselineCritical": 29,
+      "responseCritical": 28,
+      "baselineStoredM3": 5021397.897803609,
+      "responseStoredM3": 4553393.607474399
+    },
+    {
+      "timeMin": 84,
+      "baselineCritical": 29,
+      "responseCritical": 29,
+      "baselineStoredM3": 5068753.269919685,
+      "responseStoredM3": 4595048.204101572
+    },
+    {
+      "timeMin": 85,
+      "baselineCritical": 29,
+      "responseCritical": 29,
+      "baselineStoredM3": 5116103.398423192,
+      "responseStoredM3": 4636706.017544215
+    },
+    {
+      "timeMin": 86,
+      "baselineCritical": 29,
+      "responseCritical": 29,
+      "baselineStoredM3": 5163430.362476403,
+      "responseStoredM3": 4678354.678370906
+    },
+    {
+      "timeMin": 87,
+      "baselineCritical": 29,
+      "responseCritical": 29,
+      "baselineStoredM3": 5210734.127081185,
+      "responseStoredM3": 4719978.060660085
+    },
+    {
+      "timeMin": 88,
+      "baselineCritical": 29,
+      "responseCritical": 29,
+      "baselineStoredM3": 5258014.653214103,
+      "responseStoredM3": 4761576.190106203
+    },
+    {
+      "timeMin": 89,
+      "baselineCritical": 29,
+      "responseCritical": 29,
+      "baselineStoredM3": 5305271.897704344,
+      "responseStoredM3": 4803149.089301228
+    },
+    {
+      "timeMin": 90,
+      "baselineCritical": 29,
+      "responseCritical": 29,
+      "baselineStoredM3": 5352506.319352568,
+      "responseStoredM3": 4844696.777717965
+    },
+    {
+      "timeMin": 91,
+      "baselineCritical": 29,
+      "responseCritical": 29,
+      "baselineStoredM3": 5378448.474240618,
+      "responseStoredM3": 4865326.1041721525
+    },
+    {
+      "timeMin": 92,
+      "baselineCritical": 29,
+      "responseCritical": 29,
+      "baselineStoredM3": 5404460.642232584,
+      "responseStoredM3": 4886469.8383209165
+    },
+    {
+      "timeMin": 93,
+      "baselineCritical": 29,
+      "responseCritical": 29,
+      "baselineStoredM3": 5430469.885444936,
+      "responseStoredM3": 4908112.225094548
+    },
+    {
+      "timeMin": 94,
+      "baselineCritical": 29,
+      "responseCritical": 29,
+      "baselineStoredM3": 5456476.130667682,
+      "responseStoredM3": 4929737.429425357
+    },
+    {
+      "timeMin": 95,
+      "baselineCritical": 29,
+      "responseCritical": 29,
+      "baselineStoredM3": 5482479.304446463,
+      "responseStoredM3": 4951345.526794558
+    },
+    {
+      "timeMin": 96,
+      "baselineCritical": 29,
+      "responseCritical": 29,
+      "baselineStoredM3": 5509109.188077839,
+      "responseStoredM3": 4972936.591489021
+    },
+    {
+      "timeMin": 97,
+      "baselineCritical": 29,
+      "responseCritical": 29,
+      "baselineStoredM3": 5536047.1529997345,
+      "responseStoredM3": 4994510.69660172
+    },
+    {
+      "timeMin": 98,
+      "baselineCritical": 29,
+      "responseCritical": 29,
+      "baselineStoredM3": 5562974.696668682,
+      "responseStoredM3": 5016067.914032068
+    },
+    {
+      "timeMin": 99,
+      "baselineCritical": 29,
+      "responseCritical": 29,
+      "baselineStoredM3": 5589891.806222664,
+      "responseStoredM3": 5037610.323826163
+    },
+    {
+      "timeMin": 100,
+      "baselineCritical": 29,
+      "responseCritical": 29,
+      "baselineStoredM3": 5616798.467889109,
+      "responseStoredM3": 5059167.321118848
+    },
+    {
+      "timeMin": 101,
+      "baselineCritical": 29,
+      "responseCritical": 29,
+      "baselineStoredM3": 5643694.666960184,
+      "responseStoredM3": 5080706.575084499
+    },
+    {
+      "timeMin": 102,
+      "baselineCritical": 29,
+      "responseCritical": 29,
+      "baselineStoredM3": 5670580.387767525,
+      "responseStoredM3": 5102228.146535278
+    },
+    {
+      "timeMin": 103,
+      "baselineCritical": 29,
+      "responseCritical": 29,
+      "baselineStoredM3": 5697455.613656355,
+      "responseStoredM3": 5123884.187598467
+    },
+    {
+      "timeMin": 104,
+      "baselineCritical": 29,
+      "responseCritical": 29,
+      "baselineStoredM3": 5724320.326958963,
+      "responseStoredM3": 5145724.856246722
+    },
+    {
+      "timeMin": 105,
+      "baselineCritical": 29,
+      "responseCritical": 29,
+      "baselineStoredM3": 5751174.508967498,
+      "responseStoredM3": 5167547.561079256
+    },
+    {
+      "timeMin": 106,
+      "baselineCritical": 29,
+      "responseCritical": 29,
+      "baselineStoredM3": 5757234.370192782,
+      "responseStoredM3": 5169151.219971989
+    },
+    {
+      "timeMin": 107,
+      "baselineCritical": 29,
+      "responseCritical": 29,
+      "baselineStoredM3": 5763409.225949758,
+      "responseStoredM3": 5170860.672160337
+    },
+    {
+      "timeMin": 108,
+      "baselineCritical": 29,
+      "responseCritical": 29,
+      "baselineStoredM3": 5769587.936197867,
+      "responseStoredM3": 5172562.599812697
+    },
+    {
+      "timeMin": 109,
+      "baselineCritical": 29,
+      "responseCritical": 29,
+      "baselineStoredM3": 5775770.4372369405,
+      "responseStoredM3": 5174257.068687351
+    },
+    {
+      "timeMin": 110,
+      "baselineCritical": 29,
+      "responseCritical": 29,
+      "baselineStoredM3": 5781956.66626618,
+      "responseStoredM3": 5175951.899516456
+    },
+    {
+      "timeMin": 111,
+      "baselineCritical": 29,
+      "responseCritical": 29,
+      "baselineStoredM3": 5788146.561354586,
+      "responseStoredM3": 5177651.498488937
+    },
+    {
+      "timeMin": 112,
+      "baselineCritical": 29,
+      "responseCritical": 29,
+      "baselineStoredM3": 5794340.061412369,
+      "responseStoredM3": 5179344.301002953
+    },
+    {
+      "timeMin": 113,
+      "baselineCritical": 29,
+      "responseCritical": 29,
+      "baselineStoredM3": 5800537.106163331,
+      "responseStoredM3": 5181030.375714759
+    },
+    {
+      "timeMin": 114,
+      "baselineCritical": 29,
+      "responseCritical": 29,
+      "baselineStoredM3": 5806737.636118137,
+      "responseStoredM3": 5182709.790642451
+    },
+    {
+      "timeMin": 115,
+      "baselineCritical": 29,
+      "responseCritical": 29,
+      "baselineStoredM3": 5812941.592548467,
+      "responseStoredM3": 5184382.613163228
+    },
+    {
+      "timeMin": 116,
+      "baselineCritical": 29,
+      "responseCritical": 29,
+      "baselineStoredM3": 5819148.917461984,
+      "responseStoredM3": 5186057.978481116
+    },
+    {
+      "timeMin": 117,
+      "baselineCritical": 29,
+      "responseCritical": 29,
+      "baselineStoredM3": 5825359.553578102,
+      "responseStoredM3": 5187784.940953846
+    },
+    {
+      "timeMin": 118,
+      "baselineCritical": 29,
+      "responseCritical": 29,
+      "baselineStoredM3": 5831573.444304499,
+      "responseStoredM3": 5189505.505433567
+    },
+    {
+      "timeMin": 119,
+      "baselineCritical": 29,
+      "responseCritical": 29,
+      "baselineStoredM3": 5837790.533714359,
+      "responseStoredM3": 5191219.736661108
+    },
+    {
+      "timeMin": 120,
+      "baselineCritical": 29,
+      "responseCritical": 29,
+      "baselineStoredM3": 5844010.766524295,
+      "responseStoredM3": 5192927.698726918
+    },
+    {
+      "timeMin": 121,
+      "baselineCritical": 29,
+      "responseCritical": 29,
+      "baselineStoredM3": 5839852.46928082,
+      "responseStoredM3": 5184560.905804696
+    },
+    {
+      "timeMin": 122,
+      "baselineCritical": 29,
+      "responseCritical": 29,
+      "baselineStoredM3": 5835759.596170087,
+      "responseStoredM3": 5176249.89241438
+    },
+    {
+      "timeMin": 123,
+      "baselineCritical": 29,
+      "responseCritical": 29,
+      "baselineStoredM3": 5831675.890600827,
+      "responseStoredM3": 5167963.951414694
+    },
+    {
+      "timeMin": 124,
+      "baselineCritical": 29,
+      "responseCritical": 29,
+      "baselineStoredM3": 5827601.262666652,
+      "responseStoredM3": 5159729.289307543
+    },
+    {
+      "timeMin": 125,
+      "baselineCritical": 29,
+      "responseCritical": 29,
+      "baselineStoredM3": 5823535.623653535,
+      "responseStoredM3": 5151502.085619827
+    },
+    {
+      "timeMin": 126,
+      "baselineCritical": 29,
+      "responseCritical": 29,
+      "baselineStoredM3": 5819478.886008476,
+      "responseStoredM3": 5143282.281249128
+    },
+    {
+      "timeMin": 127,
+      "baselineCritical": 29,
+      "responseCritical": 29,
+      "baselineStoredM3": 5815430.963309317,
+      "responseStoredM3": 5135117.159576822
+    },
+    {
+      "timeMin": 128,
+      "baselineCritical": 29,
+      "responseCritical": 29,
+      "baselineStoredM3": 5811391.770235652,
+      "responseStoredM3": 5127060.698090741
+    },
+    {
+      "timeMin": 129,
+      "baselineCritical": 29,
+      "responseCritical": 29,
+      "baselineStoredM3": 5807359.821874676,
+      "responseStoredM3": 5119029.465134071
+    },
+    {
+      "timeMin": 130,
+      "baselineCritical": 28,
+      "responseCritical": 29,
+      "baselineStoredM3": 5803325.1471533105,
+      "responseStoredM3": 5111005.429914289
+    },
+    {
+      "timeMin": 131,
+      "baselineCritical": 28,
+      "responseCritical": 29,
+      "baselineStoredM3": 5799285.826794201,
+      "responseStoredM3": 5102988.537233881
+    },
+    {
+      "timeMin": 132,
+      "baselineCritical": 28,
+      "responseCritical": 29,
+      "baselineStoredM3": 5795241.882304892,
+      "responseStoredM3": 5094978.732479059
+    },
+    {
+      "timeMin": 133,
+      "baselineCritical": 28,
+      "responseCritical": 29,
+      "baselineStoredM3": 5791193.335418786,
+      "responseStoredM3": 5086975.961608267
+    },
+    {
+      "timeMin": 134,
+      "baselineCritical": 28,
+      "responseCritical": 29,
+      "baselineStoredM3": 5787140.208073462,
+      "responseStoredM3": 5078980.171141014
+    },
+    {
+      "timeMin": 135,
+      "baselineCritical": 28,
+      "responseCritical": 29,
+      "baselineStoredM3": 5783082.5223900275,
+      "responseStoredM3": 5070991.308147035
+    },
+    {
+      "timeMin": 136,
+      "baselineCritical": 28,
+      "responseCritical": 29,
+      "baselineStoredM3": 5779020.300653444,
+      "responseStoredM3": 5063009.320235764
+    },
+    {
+      "timeMin": 137,
+      "baselineCritical": 28,
+      "responseCritical": 29,
+      "baselineStoredM3": 5774953.565293803,
+      "responseStoredM3": 5055034.155546127
+    },
+    {
+      "timeMin": 138,
+      "baselineCritical": 28,
+      "responseCritical": 29,
+      "baselineStoredM3": 5770882.338868494,
+      "responseStoredM3": 5047067.30720529
+    },
+    {
+      "timeMin": 139,
+      "baselineCritical": 28,
+      "responseCritical": 29,
+      "baselineStoredM3": 5766806.644045232,
+      "responseStoredM3": 5039188.968784359
+    },
+    {
+      "timeMin": 140,
+      "baselineCritical": 28,
+      "responseCritical": 29,
+      "baselineStoredM3": 5762726.503585896,
+      "responseStoredM3": 5031317.301081057
+    },
+    {
+      "timeMin": 141,
+      "baselineCritical": 28,
+      "responseCritical": 29,
+      "baselineStoredM3": 5758641.94033117,
+      "responseStoredM3": 5023452.2542559765
+    },
+    {
+      "timeMin": 142,
+      "baselineCritical": 28,
+      "responseCritical": 29,
+      "baselineStoredM3": 5754552.977185912,
+      "responseStoredM3": 5015593.7789524505
+    },
+    {
+      "timeMin": 143,
+      "baselineCritical": 28,
+      "responseCritical": 29,
+      "baselineStoredM3": 5750459.637105254,
+      "responseStoredM3": 5007741.826179312
+    },
+    {
+      "timeMin": 144,
+      "baselineCritical": 28,
+      "responseCritical": 29,
+      "baselineStoredM3": 5746361.943081381,
+      "responseStoredM3": 4999895.962737428
+    },
+    {
+      "timeMin": 145,
+      "baselineCritical": 28,
+      "responseCritical": 29,
+      "baselineStoredM3": 5742259.918071044,
+      "responseStoredM3": 4992055.7635295065
+    },
+    {
+      "timeMin": 146,
+      "baselineCritical": 28,
+      "responseCritical": 29,
+      "baselineStoredM3": 5738153.209921818,
+      "responseStoredM3": 4984221.188082692
+    },
+    {
+      "timeMin": 147,
+      "baselineCritical": 28,
+      "responseCritical": 28,
+      "baselineStoredM3": 5734041.451165128,
+      "responseStoredM3": 4976452.043744708
+    },
+    {
+      "timeMin": 148,
+      "baselineCritical": 28,
+      "responseCritical": 28,
+      "baselineStoredM3": 5729924.671740459,
+      "responseStoredM3": 4968877.196320034
+    },
+    {
+      "timeMin": 149,
+      "baselineCritical": 28,
+      "responseCritical": 28,
+      "baselineStoredM3": 5725802.901623524,
+      "responseStoredM3": 4961311.5301217865
+    },
+    {
+      "timeMin": 150,
+      "baselineCritical": 28,
+      "responseCritical": 28,
+      "baselineStoredM3": 5721676.170696782,
+      "responseStoredM3": 4953754.171828671
+    },
+    {
+      "timeMin": 151,
+      "baselineCritical": 28,
+      "responseCritical": 28,
+      "baselineStoredM3": 5717544.508740845,
+      "responseStoredM3": 4946234.5417684335
+    },
+    {
+      "timeMin": 152,
+      "baselineCritical": 28,
+      "responseCritical": 28,
+      "baselineStoredM3": 5713407.945426351,
+      "responseStoredM3": 4938776.877643298
+    },
+    {
+      "timeMin": 153,
+      "baselineCritical": 28,
+      "responseCritical": 28,
+      "baselineStoredM3": 5709266.5103063,
+      "responseStoredM3": 4931420.25848709
+    },
+    {
+      "timeMin": 154,
+      "baselineCritical": 28,
+      "responseCritical": 28,
+      "baselineStoredM3": 5705120.232808823,
+      "responseStoredM3": 4924312.861076834
+    },
+    {
+      "timeMin": 155,
+      "baselineCritical": 28,
+      "responseCritical": 28,
+      "baselineStoredM3": 5700969.1422303775,
+      "responseStoredM3": 4917212.768477565
+    },
+    {
+      "timeMin": 156,
+      "baselineCritical": 28,
+      "responseCritical": 28,
+      "baselineStoredM3": 5696813.267729339,
+      "responseStoredM3": 4910119.896055424
+    },
+    {
+      "timeMin": 157,
+      "baselineCritical": 28,
+      "responseCritical": 28,
+      "baselineStoredM3": 5692652.638319973,
+      "responseStoredM3": 4903034.160972197
+    },
+    {
+      "timeMin": 158,
+      "baselineCritical": 28,
+      "responseCritical": 28,
+      "baselineStoredM3": 5688487.282866784,
+      "responseStoredM3": 4895955.482133279
+    },
+    {
+      "timeMin": 159,
+      "baselineCritical": 28,
+      "responseCritical": 28,
+      "baselineStoredM3": 5684317.230079215,
+      "responseStoredM3": 4888883.780137467
+    },
+    {
+      "timeMin": 160,
+      "baselineCritical": 28,
+      "responseCritical": 28,
+      "baselineStoredM3": 5680142.508506677,
+      "responseStoredM3": 4881818.977228499
+    },
+    {
+      "timeMin": 161,
+      "baselineCritical": 28,
+      "responseCritical": 28,
+      "baselineStoredM3": 5675963.1465339055,
+      "responseStoredM3": 4874760.997248265
+    },
+    {
+      "timeMin": 162,
+      "baselineCritical": 28,
+      "responseCritical": 28,
+      "baselineStoredM3": 5671794.071985189,
+      "responseStoredM3": 4867709.765591614
+    },
+    {
+      "timeMin": 163,
+      "baselineCritical": 28,
+      "responseCritical": 28,
+      "baselineStoredM3": 5667668.796318394,
+      "responseStoredM3": 4860665.209162685
+    },
+    {
+      "timeMin": 164,
+      "baselineCritical": 28,
+      "responseCritical": 28,
+      "baselineStoredM3": 5663539.242244963,
+      "responseStoredM3": 4853627.256332701
+    },
+    {
+      "timeMin": 165,
+      "baselineCritical": 28,
+      "responseCritical": 28,
+      "baselineStoredM3": 5659405.429501292,
+      "responseStoredM3": 4846595.836899159
+    },
+    {
+      "timeMin": 166,
+      "baselineCritical": 28,
+      "responseCritical": 28,
+      "baselineStoredM3": 5655267.37802167,
+      "responseStoredM3": 4839570.882046367
+    },
+    {
+      "timeMin": 167,
+      "baselineCritical": 28,
+      "responseCritical": 27,
+      "baselineStoredM3": 5651186.3806780195,
+      "responseStoredM3": 4832599.930178688
+    },
+    {
+      "timeMin": 168,
+      "baselineCritical": 28,
+      "responseCritical": 27,
+      "baselineStoredM3": 5647107.075757428,
+      "responseStoredM3": 4825671.036737899
+    },
+    {
+      "timeMin": 169,
+      "baselineCritical": 28,
+      "responseCritical": 27,
+      "baselineStoredM3": 5643023.696127181,
+      "responseStoredM3": 4818807.369593932
+    },
+    {
+      "timeMin": 170,
+      "baselineCritical": 28,
+      "responseCritical": 27,
+      "baselineStoredM3": 5638936.266273906,
+      "responseStoredM3": 4811974.278012713
+    },
+    {
+      "timeMin": 171,
+      "baselineCritical": 28,
+      "responseCritical": 27,
+      "baselineStoredM3": 5634844.810629595,
+      "responseStoredM3": 4805147.326441821
+    },
+    {
+      "timeMin": 172,
+      "baselineCritical": 28,
+      "responseCritical": 27,
+      "baselineStoredM3": 5630749.353562963,
+      "responseStoredM3": 4798326.4536261605
+    },
+    {
+      "timeMin": 173,
+      "baselineCritical": 28,
+      "responseCritical": 27,
+      "baselineStoredM3": 5626649.919371639,
+      "responseStoredM3": 4791570.175820538
+    },
+    {
+      "timeMin": 174,
+      "baselineCritical": 28,
+      "responseCritical": 27,
+      "baselineStoredM3": 5622546.532275091,
+      "responseStoredM3": 4784861.589640444
+    },
+    {
+      "timeMin": 175,
+      "baselineCritical": 28,
+      "responseCritical": 27,
+      "baselineStoredM3": 5618439.216408256,
+      "responseStoredM3": 4778155.791087853
+    },
+    {
+      "timeMin": 176,
+      "baselineCritical": 28,
+      "responseCritical": 27,
+      "baselineStoredM3": 5614327.995815845,
+      "responseStoredM3": 4771446.547514956
+    },
+    {
+      "timeMin": 177,
+      "baselineCritical": 28,
+      "responseCritical": 27,
+      "baselineStoredM3": 5610212.894447228,
+      "responseStoredM3": 4764733.713025988
+    },
+    {
+      "timeMin": 178,
+      "baselineCritical": 28,
+      "responseCritical": 27,
+      "baselineStoredM3": 5606093.936151904,
+      "responseStoredM3": 4758017.319663701
+    },
+    {
+      "timeMin": 179,
+      "baselineCritical": 28,
+      "responseCritical": 27,
+      "baselineStoredM3": 5601971.144675492,
+      "responseStoredM3": 4751297.3997333255
+    },
+    {
+      "timeMin": 180,
+      "baselineCritical": 28,
+      "responseCritical": 27,
+      "baselineStoredM3": 5597844.543656221,
+      "responseStoredM3": 4744573.9857858615
+    }
+  ]
+}
