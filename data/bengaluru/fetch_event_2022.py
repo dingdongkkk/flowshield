@@ -73,7 +73,7 @@ def main():
         "hourlyMm": hourly,
         "era5TotalMm": round(era5_total, 2),
         "scaledTotalMm": REPORTED_TOTAL_MM,
-        "rainfallMethod": "ERA5 hourly timing (Open-Meteo archive) scaled to the IMD-reported total",
+        "rainfallMethod": "ERA5 hourly timing scaled to an illustrative 100 mm, informed by news reporting; not a measured local hourly record",
         "news": NEWS,
         "reportedFloodedPlaces": places,
         "geocoder": "OpenStreetMap Nominatim",

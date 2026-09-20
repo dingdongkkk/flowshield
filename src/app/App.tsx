@@ -346,7 +346,8 @@ export function App() {
             averaged into {GRID.cellM} m cells ({BENGALURU_TERRAIN.samplesPerCell} samples each). Rainfall, drain capacity,
             conductance, and blockages are assumptions you control. Published drain lines are geographic context, not a
             calibrated hydraulic network. Edges are open: water can leave toward lower ground outside the area, but
-            inflow from beyond it is not simulated.
+            inflow from beyond it is not simulated. Lakes are map overlays; lake storage and overflow are not modelled.
+            This covers part of Bengaluru, not the whole city, and is not a validated flood forecast.
           </div>
           <SlotProblem name="Baseline" slot={slots.baseline} />
           <SlotProblem name="Response" slot={slots.intervention} />

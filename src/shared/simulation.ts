@@ -264,7 +264,7 @@ export type SimulationRun =
       readonly error: SimulationRuntimeError;
     };
 
-/** Future exports from src/simulation/index.ts; not implemented in this task. */
+/** Entry-point signatures implemented in src/simulation/index.ts. */
 export type ValidateSimulationConfig = (input: unknown) => ValidationResult;
 /** Revalidates input at runtime. Synchronous, pure, and safe to call in a worker. */
 export type SimulateFlood = (config: SimulationConfig) => SimulationRun;

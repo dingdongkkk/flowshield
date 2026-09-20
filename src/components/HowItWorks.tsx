@@ -30,7 +30,7 @@ export function HowItWorks() {
       <ul>
         <li><strong>Water balance:</strong> every step checks that storage = rain − drained − pumped − outflow. It fails loudly if the error exceeds 10⁻⁶ m³ plus a relative tolerance. The panel below shows the residual.</li>
         <li><strong>Stability:</strong> the time step stays below 0.45 · A / ΣG, and halving it gives the same peak depths.</li>
-        <li><strong>Engine checks:</strong> 13 analytical checks (unit conversion, conservation, equilibrium, event timing, and more) run with <code>npm test</code>.</li>
+        <li><strong>Engine checks:</strong> 21 engine and integration checks (conservation, event timing, detention, upgrades, horizon changes, and AI limits) run with <code>npm test</code>.</li>
         <li><strong>AI surrogate:</strong> scored on hundreds of held-out engine runs it never saw during training.</li>
       </ul>
       <h3>What it does not model</h3>

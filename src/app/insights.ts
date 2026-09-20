@@ -64,8 +64,8 @@ export interface Validation {
   readonly places: readonly PlaceCheck[];
   readonly inside: number;
   readonly hits: number;
-  /** Share of all 3x3 neighbourhoods containing a critical cell: the hit rate expected by chance. */
-  readonly chanceRate: number;
+  /** Descriptive share of grid-centred 3x3 neighbourhoods containing a critical cell. */
+  readonly neighbourhoodCriticalShare: number;
 }
 
 function cellAt(lat: number, lng: number): string | null {
@@ -76,9 +76,10 @@ function cellAt(lat: number, lng: number): string | null {
 
 /**
  * Compare a replay run with places reported flooded. A place counts as a hit when
- * any cell within one cell (about 750 m) reached critical depth, which allows for
- * point geocodes and 500 m cells. The chance rate uses the same neighbourhood test
- * on every cell, so a model that floods at random scores about the chance rate.
+ * any cell in the containing cell's 3x3 neighbourhood reached critical depth.
+ * This is not a fixed-radius distance test. The reference share applies that
+ * neighbourhood test at every grid cell; it is not a significance test for the
+ * small, nonrandom set of reported places. Edge neighbourhoods are truncated.
  */
 export function validateReplay(result: SimulationResult): Validation {
   const critical = result.riskThresholds.criticalDepthM;
@@ -98,5 +99,5 @@ export function validateReplay(result: SimulationResult): Validation {
   let critHoods = 0;
   for (let row = 0; row < GRID.rows; row += 1) for (let col = 0; col < GRID.cols; col += 1) if (nearbyMax(row, col) >= critical) critHoods += 1;
   const inside = places.filter((p) => p.cellId !== null);
-  return { places, inside: inside.length, hits: inside.filter((p) => p.hit).length, chanceRate: critHoods / (GRID.rows * GRID.cols) };
+  return { places, inside: inside.length, hits: inside.filter((p) => p.hit).length, neighbourhoodCriticalShare: critHoods / (GRID.rows * GRID.cols) };
 }

@@ -66,6 +66,23 @@ export const DEFAULT_DRAFT: ScenarioDraft = {
   conductanceScale: 1,
 };
 
+/** UI horizon changes keep scheduled actions inside the run (five-minute controls).
+ * Preserve a valid failure → clearing sequence when both times need moving.
+ * The engine still rejects invalid times supplied directly through its contract.
+ */
+export function withScenarioHorizon(draft: ScenarioDraft, durationMin: number): ScenarioDraft {
+  const latest = Math.max(0, durationMin - 5);
+  const clamp = (time: number) => Math.max(0, Math.min(time, latest));
+  const clearDrainsAtMin = draft.clearDrainsAtMin === null ? null : clamp(draft.clearDrainsAtMin);
+  let drainFailureMin = clamp(draft.drainFailureMin);
+  if (draft.basinDrainCondition === "fails-mid-storm" && clearDrainsAtMin !== null &&
+      draft.clearDrainsAtMin! > draft.drainFailureMin && drainFailureMin >= clearDrainsAtMin) {
+    drainFailureMin = Math.max(0, clearDrainsAtMin - 5);
+  }
+  return { ...draft, durationMin, stormDurationMin: Math.min(draft.stormDurationMin, durationMin),
+    pumpDeployMin: clamp(draft.pumpDeployMin), drainFailureMin, clearDrainsAtMin };
+}
+
 /** One-click demo scenarios. Each sets every field it relies on. */
 export const PRESETS: readonly { readonly id: string; readonly label: string; readonly hint: string; readonly draft: ScenarioDraft }[] = [
   {
@@ -206,6 +223,21 @@ export function pumpSites(count: number): string[] {
     .sort((a, b) => a.terrain - b.terrain || (a.id < b.id ? -1 : 1))
     .slice(0, Math.max(0, count))
     .map((c) => c.id);
+}
+
+/** Unique cells receiving structural measures; an area footprint, not a cost. */
+export function responseFootprint(draft: ScenarioDraft): number {
+  const changed = new Set<string>();
+  if (draft.drainUpgradeFactor > 1 && draft.drainDesignMmPerHour > 0) {
+    for (const id of LOW_LYING_IDS) changed.add(id);
+  }
+  if (draft.detentionHoldPct > 0) {
+    for (const id of detentionSites(draft.detentionShare)) changed.add(id);
+  }
+  if (draft.pumpCapacityM3PerS > 0) {
+    for (const id of pumpSites(draft.pumpCount)) changed.add(id);
+  }
+  return changed.size;
 }
 
 export interface ScenarioPair {

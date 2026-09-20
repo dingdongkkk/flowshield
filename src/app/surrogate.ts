@@ -37,11 +37,47 @@ export interface SurrogateModel {
 const STORMS = ["steady", "heavy", "cloudburst"] as const;
 const CONDITIONS = ["working", "partly-blocked", "blocked", "fails-mid-storm"] as const;
 
-/** True when the surrogate was trained on scenarios like this one. */
+/** Bounds of the generator used for the shipped model; see sampleDraft in
+ * scripts/train-surrogate.mjs. These are a support check, not evidence that
+ * every combination was observed or that real-world predictions are accurate.
+ */
 export function inTrainingRange(d: ScenarioDraft): { ok: boolean; reason?: string } {
   if (d.storm === "event-2022") return { ok: false, reason: "The 2022 replay is not in the training set." };
   if (d.warningDepthM !== 0.1 || d.criticalDepthM !== 0.3) return { ok: false, reason: "Trained for 10 cm / 30 cm thresholds only." };
   if (d.conductanceScale !== 1) return { ok: false, reason: "Trained with default conductance only." };
+  if (d.maxStepS !== 1) return { ok: false, reason: "Trained with a one-second maximum integration step only." };
+  if (!STORMS.some((s) => s === d.storm) || !CONDITIONS.some((c) => c === d.basinDrainCondition)) {
+    return { ok: false, reason: "Unsupported storm or drain condition." };
+  }
+  if (![60, 120, 180, 240, 360].includes(d.durationMin)) {
+    return { ok: false, reason: "Trained for horizons of 1, 2, 3, 4 or 6 hours only." };
+  }
+  const bounds: readonly [string, number, number, number][] = [
+    ["Rain intensity (mm/h)", d.peakIntensityMmPerHour, 5, 200],
+    ["Storm length (min)", d.stormDurationMin, 15, Math.min(240, d.durationMin)],
+    ["Drain capacity (mm/h)", d.drainDesignMmPerHour, 0, 60],
+    ["Pump count", d.pumpCount, 0, 10],
+    ["Pump capacity (m³/s)", d.pumpCapacityM3PerS, 0.05, 1.5],
+    ["Detention share", d.detentionShare, 0, 0.7],
+    ["Runoff held back (%)", d.detentionHoldPct, 10, 95],
+    ["Drain upgrade factor", d.drainUpgradeFactor, 1, 4],
+  ];
+  const times: [string, number, number, number][] = [];
+  if (d.pumpCount > 0) boundsForTime("Pump deployment", d.pumpDeployMin);
+  if (d.basinDrainCondition === "fails-mid-storm") boundsForTime("Drain failure", d.drainFailureMin);
+  if (d.basinDrainCondition !== "working" && d.clearDrainsAtMin !== null) {
+    times.push(["Drain clearing (min)", d.clearDrainsAtMin, 5, d.durationMin - 10]);
+  }
+  function boundsForTime(label: string, time: number) {
+    times.push([`${label} (min)`, time, 0, d.durationMin - 10]);
+  }
+  function unsupported([label, value, min, max]: readonly [string, number, number, number]) {
+    return !Number.isFinite(value) || value < min || value > max
+      ? `${label} is outside the training range (${min}–${max}).` : null;
+  }
+  const issue = [...bounds, ...times].map(unsupported).find((reason) => reason !== null);
+  if (issue) return { ok: false, reason: issue };
+  if (!Number.isInteger(d.pumpCount)) return { ok: false, reason: "Pump count must be a whole number." };
   return { ok: true };
 }
 

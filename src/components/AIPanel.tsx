@@ -2,7 +2,7 @@ import { useMemo } from "react";
 import type { SimulationResult } from "../shared/simulation";
 import surrogateJson from "../data/surrogate-model.json";
 import { inTrainingRange, predict, withoutResponse, type Prediction, type SurrogateModel } from "../app/surrogate";
-import { BASIN_REGION_IDS, GRID, type ScenarioDraft } from "../app/scenarios";
+import { GRID, responseFootprint, type ScenarioDraft } from "../app/scenarios";
 import { TOTAL_BUILDINGS, buildingsEverCritical } from "../app/insights";
 import { formatDepth, formatDuration } from "../app/format";
 
@@ -14,13 +14,6 @@ interface Plan {
   readonly footprint: number;
   readonly prediction: Prediction;
   readonly summary: string;
-}
-
-/** Cells whose infrastructure the plan changes: a transparent size-of-plan measure. */
-function footprint(d: ScenarioDraft): number {
-  const upgraded = d.drainUpgradeFactor > 1 ? BASIN_REGION_IDS.size : 0;
-  const detained = Math.round(d.detentionShare * CELLS);
-  return upgraded + detained + d.pumpCount;
 }
 
 function describe(d: ScenarioDraft): string {
@@ -39,7 +32,9 @@ function searchPlans(base: ScenarioDraft): { front: Plan[]; evaluated: number } 
       for (const hold of share === 0 ? [base.detentionHoldPct] : [50, 70, 85, 95]) {
         for (const pumps of [0, 3, 6]) {
           const draft = { ...base, drainUpgradeFactor: up, detentionShare: share, detentionHoldPct: hold, pumpCount: pumps };
-          plans.push({ draft, footprint: footprint(draft), prediction: predict(MODEL, draft), summary: describe(draft) });
+          if (inTrainingRange(draft).ok) {
+            plans.push({ draft, footprint: responseFootprint(draft), prediction: predict(MODEL, draft), summary: describe(draft) });
+          }
         }
       }
     }
@@ -58,7 +53,7 @@ function searchPlans(base: ScenarioDraft): { front: Plan[]; evaluated: number } 
 }
 
 function Estimate({ label, p, horizonMin }: { label: string; p: Prediction; horizonMin: number }) {
-  const earliest = p.earliestCriticalShare >= 0.98 ? "not within horizon" : `T+${formatDuration(p.earliestCriticalShare * horizonMin * 60)}`;
+  const earliest = p.earliestCriticalShare >= 0.98 ? "near end or not reached; verify" : `≈ T+${formatDuration(p.earliestCriticalShare * horizonMin * 60)}`;
   return (
     <div className="ai-est">
       <span className="stat-label">{label}</span>
@@ -66,7 +61,7 @@ function Estimate({ label, p, horizonMin }: { label: string; p: Prediction; hori
         <div><dt>Peak depth</dt><dd>{formatDepth(p.peakDepthM)}</dd></div>
         <div><dt>Cells critical</dt><dd>{Math.round(p.criticalShare * CELLS)}</dd></div>
         <div><dt>First critical</dt><dd>{earliest}</dd></div>
-        <div><dt>Buildings affected</dt><dd>{Math.round(p.buildingsCriticalShare * TOTAL_BUILDINGS).toLocaleString()}</dd></div>
+        <div><dt>Buildings in critical cells</dt><dd>{Math.round(p.buildingsCriticalShare * TOTAL_BUILDINGS).toLocaleString()}</dd></div>
       </dl>
     </div>
   );
@@ -90,7 +85,7 @@ export function AIPanel({ draft, onApply, verified }: {
       <header className="panel-head">
         <h2><span className="ai-badge">AI</span> Instant estimate &amp; plan search</h2>
         <span className="muted">
-          Neural-network surrogate trained on {(MODEL.samples.train + MODEL.samples.test).toLocaleString()} engine runs
+          Neural network: {MODEL.samples.train.toLocaleString()} training runs; {MODEL.samples.test} held-out engine runs
         </span>
       </header>
       {!range.ok ? (
@@ -110,11 +105,16 @@ export function AIPanel({ draft, onApply, verified }: {
               {buildingsEverCritical(verified).toLocaleString()}.
             </p>
           ) : null}
-          <h3 className="ai-sub">Best plans for this storm, by plan size (each one beats every smaller plan)</h3>
+          <h3 className="ai-sub">Candidate plans by unique cell footprint (AI estimates)</h3>
+          <p className="footnote">
+            Each cell is counted once, even when measures overlap. This measures land coverage, not cost or
+            feasibility: stronger upgrades can have the same footprint. Rankings compare only the sampled plans
+            and require engine verification. Drain clearing follows your current schedule and is not searched.
+          </p>
           <div className="table-wrap">
             <table className="plan-table">
               <thead>
-                <tr><th>Plan</th><th className="num">Cells changed</th><th className="num">Critical cells</th><th className="num">Peak depth</th><th /></tr>
+                <tr><th>Plan</th><th className="num">Unique cells</th><th className="num">Critical cells</th><th className="num">Peak depth</th><th /></tr>
               </thead>
               <tbody>
                 {plans.slice(0, 7).map((p) => (
@@ -131,10 +131,11 @@ export function AIPanel({ draft, onApply, verified }: {
           </div>
           <p className="footnote">
             The surrogate scored {search.evaluated} candidate plans instantly. "Apply &amp; verify" loads a plan
-            and runs the real engine, which is the source of truth. Accuracy on {MODEL.samples.test} held-out runs:
-            peak depth ±{(m.peakDepthM.mae * 100).toFixed(1)} cm (R² {m.peakDepthM.r2.toFixed(3)}), critical cells
-            ±{(m.criticalShare.mae * CELLS).toFixed(1)} (R² {m.criticalShare.r2.toFixed(3)}), first-critical time
+            and runs the simulation engine. Agreement with {MODEL.samples.test} held-out engine runs:
+            peak depth mean absolute error {(m.peakDepthM.mae * 100).toFixed(1)} cm (R² {m.peakDepthM.r2.toFixed(3)}), critical cells
+            mean absolute error {(m.criticalShare.mae * CELLS).toFixed(1)} (R² {m.criticalShare.r2.toFixed(3)}), first-critical time
             R² {m.earliestCriticalShare.r2.toFixed(2)}. Valid for: {MODEL.validity}
+            These are average simulation errors, not confidence intervals or accuracy against observed floods.
           </p>
         </>
       )}

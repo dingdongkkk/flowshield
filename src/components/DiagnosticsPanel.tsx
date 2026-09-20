@@ -10,7 +10,7 @@ const ROWS: readonly [keyof WaterBalance, string][] = [
   ["rainfallInputM3", "+ Rainfall"],
   ["drainedM3", "− Drained"],
   ["pumpedM3", "− Pumped"],
-  ["boundaryDischargeM3", "− To river"],
+  ["boundaryDischargeM3", "− Across model boundary"],
   ["storageM3", "= Stored now"],
 ];
 
