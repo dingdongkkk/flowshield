@@ -1,7 +1,7 @@
 # Brochure-aligned demo video script (about 2 min 50 s)
 
-Record the default heavy-storm comparison in presentation mode with Block H17
-selected. Keep “Simulated scenario” visible. Numerical claims below belong to
+Record the default heavy-storm comparison with Block H17 selected. Keep
+“Simulated scenario” visible. Numerical claims below belong to
 that configuration; read new engine results if changing a plan. Rehearse against
 the three-minute limit. Timings are targets.
 
