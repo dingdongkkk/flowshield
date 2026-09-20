@@ -7,23 +7,22 @@ import { formatDepth } from "../app/format";
 export function ValidationPanel({ result }: { readonly result: SimulationResult }) {
   const v = validateReplay(result);
   const hitRate = v.inside > 0 ? v.hits / v.inside : 0;
-  const better = hitRate > v.chanceRate + 0.15;
   return (
     <section className="panel">
       <header className="panel-head">
-        <h2>Reality check: the September 2022 flood</h2>
+        <h2>Exploratory replay: September 2022 reports</h2>
         <span className="muted">Rain: {EVENT_2022.rainfallMethod}</span>
       </header>
       <p>
         <strong>{v.hits} of {v.inside}</strong> places reported flooded inside the model area have a critical cell within
-        about 750 m. By chance you would expect <strong>{Math.round(v.chanceRate * 100)}%</strong>, because that share of all
-        neighbourhoods contains a critical cell. {better
-          ? "The model does better than chance here."
-          : "That is no better than chance, so this replay does not yet show the model can predict where flooding happens."}
+        the surrounding 3 × 3 cell neighbourhood ({Math.round(hitRate * 100)}% of reported places).
+        Across the whole grid, <strong>{Math.round(v.neighbourhoodCriticalShare * 100)}%</strong> of cell-centred neighbourhoods
+        contain a critical cell. This is a descriptive comparison, not a statistical significance test or validated
+        forecasting accuracy: reports are few, selectively located, and spatially overlapping.
       </p>
       <div className="table-wrap">
         <table>
-          <thead><tr><th>Reported place</th><th>Model cell</th><th className="num">Peak in cell</th><th className="num">Peak within ~750 m</th><th>Result</th></tr></thead>
+          <thead><tr><th>Reported place</th><th>Model cell</th><th className="num">Peak in cell</th><th className="num">Peak in 3 × 3 neighbourhood</th><th>Result</th></tr></thead>
           <tbody>
             {v.places.map((p) => (
               <tr key={p.name}>
@@ -38,8 +37,9 @@ export function ValidationPanel({ result }: { readonly result: SimulationResult 
         </table>
       </div>
       <p className="footnote">
-        Why places are missed: in 2022, Bellandur flooded when its lake overflowed with water from a catchment that is mostly
-        outside this area. The model has no lakes as storage and no inflow from beyond its edges. Sources: rainfall total and
+        Possible reasons for mismatch include omitted lake storage, overflow, and inflow from beyond the model edges.
+        This comparison cannot identify which omission caused a particular miss. Rain timing is ERA5 rescaled to an
+        illustrative 100 mm total, informed by reporting rather than a measured local hourly record. Sources: rainfall reporting and
         flooded places from{" "}
         <a href={EVENT_2022.news.url} target="_blank" rel="noreferrer">{EVENT_2022.news.publisher} ({EVENT_2022.news.published})</a>,
         citing IMD; hourly timing from ERA5 (Open-Meteo), whose own total was only {EVENT_2022.era5TotalMm} mm; places

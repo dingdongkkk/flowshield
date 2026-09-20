@@ -2,13 +2,13 @@
 
 **Live demo: https://flowshield-app.vercel.app**
 
-**Predict the flood. Protect the future.** A flood simulation and early-warning dashboard for
+**Explore flood scenarios and compare responses.** A flood simulation dashboard for
 Bellandur–Marathahalli, Bengaluru, built for Hack-a-Matics 2026 (problem statement FLOWSHIELD, theme VECTOR).
 
 FlowShield simulates how rain turns into standing water across 315 real-terrain cells. It warns when and
 where each cell becomes critical, and compares response plans (drain upgrades, upstream detention, pumps,
 drain clearing) on the same storm. A neural-network surrogate trained on the engine previews outcomes
-instantly and searches for good plans. It also replays the real flood of 4–5 September 2022.
+instantly and searches for good plans. It also provides an exploratory replay informed by reports of the 4–5 September 2022 flood.
 
 ## What it does
 
@@ -24,7 +24,7 @@ instantly and searches for good plans. It also replays the real flood of 4–5 S
 | Critical regions and time to critical | Early-warnings table: countdown to critical, **warning lead time**, buildings exposed |
 | **Bonus:** normal / heavy rain, drain failure, blocked channel | One-click presets; drains can be partly or fully blocked, or fail mid-storm |
 | **Bonus:** compare scenarios | Baseline vs response: side-by-side maps, a difference view, and per-cell timing categories |
-| **Bonus:** affected population | 78,375 OpenStreetMap buildings counted per cell (buildings, not people) |
+| **Bonus:** affected population (not implemented) | Exposure proxy: 78,375 OpenStreetMap buildings counted per cell; no population estimate |
 | **Bonus:** interactive time slider | Yes, shared across both scenarios |
 
 ## AI component
@@ -33,18 +33,18 @@ instantly and searches for good plans. It also replays the real flood of 4–5 S
 [scripts/train-surrogate.mjs](scripts/train-surrogate.mjs)).
 
 - **What it is.** A multilayer perceptron (21 inputs, two hidden layers of 48 tanh units, 5 outputs). We wrote
-  it and its Adam optimiser from scratch in JavaScript. It is trained on **4,000 real engine runs** covering
+  it and its Adam optimiser from scratch in JavaScript. A dataset of **4,000 simulated engine runs** is split into **3,428 training and 572 held-out runs**, covering
   random storms, drain conditions and response plans.
 - **What it predicts.** Peak depth, the share of cells that become critical, the earliest critical time,
   the water still stored at the end, and the share of buildings in critical cells.
-- **How well.** On 572 held-out runs it never saw: peak depth ±5.6 cm (R² 0.995), critical cells ±0.9
-  (R² 0.995), first-critical time R² 0.96. These metrics ship with the model and are shown in the app.
+- **How well.** On 572 held-out runs it never saw: peak-depth mean absolute error 5.6 cm (R² 0.995), critical-cell mean absolute error 0.9
+  (R² 0.995), first-critical time R² 0.96. These metrics measure agreement with the engine, not observed floods. Mean absolute error is an average, not an error bound or confidence interval. Metrics ship with the model and appear in the app.
 - **What it is used for.** (1) Instant estimates as you move sliders. (2) **Plan search:** the app scores
-  about 600 candidate response plans in milliseconds and shows the best plan for each plan size.
+  up to 609 candidate response plans and shows improving estimates by unique cell footprint. Overlapping measures count once. Footprint is land coverage, not cost or feasibility; stronger upgrades can occupy the same cells.
   "Apply & verify" then runs the real engine and shows the estimate next to the engine result.
 - **What it is not.** It never replaces the engine. Every number on the map and in the tables comes from
   the engine. The surrogate is disabled for inputs outside its training range, including the 2022 replay
-  and non-default thresholds.
+  and non-default thresholds. Numeric checks enforce the training generator bounds, including 0–10 pumps, supported horizons, and action times. Plans outside those bounds are also excluded from the search. The engine remains available for larger pump plans. Features encode total pumping capacity rather than individual pump placement, so different layouts can share an AI estimate and still differ in engine results.
 
 Retrain with `npm run train` (about 4 minutes on 9 CPU cores).
 
@@ -60,8 +60,8 @@ For every cell *i* with area *A*, ground elevation *z* and stored volume *V*:
 - *dV/dt* = rain + inflow − outflow − drains − pumps − edge outflow
 - if a cell is asked for more water than it holds, all its outflows are scaled by the same factor *α = min(1, available / requested)*
 
-Each run checks the water balance at every step, fails loudly rather than drifting, and passes 13
-analytical checks (`npm test`). The design is in [docs/simulation-design.md](docs/simulation-design.md), and
+Each run checks the water balance at every step, fails loudly rather than drifting, and passes 21
+engine and integration checks (`npm test`). The design is in [docs/simulation-design.md](docs/simulation-design.md), and
 the choice of model area is explained in [docs/model-area.md](docs/model-area.md).
 
 **Checks shown in the app**
@@ -69,9 +69,7 @@ the choice of model area is explained in [docs/model-area.md](docs/model-area.md
 - *Sensitivity:* one click reruns the baseline with conductance halved or doubled and drain capacity ±25%.
   For the default storm, 29–31 cells go critical and the first critical time falls between T+31 and T+36 min.
 - *Reality check (2022 replay):* 3 of the 5 places reported flooded inside the area have a critical cell
-  within about 750 m. But 51% of all neighbourhoods do, so this is **no better than chance**. We show this
-  openly. The main gap: Bellandur flooded when its lake overflowed with water from a catchment mostly outside
-  the model area, and the model has no lakes and no inflow from outside.
+  in their surrounding 3 × 3 cell neighbourhood. About 51% of all grid-centred neighbourhoods contain a critical cell. These are **descriptive overlap measures, not a significance test or validation of forecasting skill**. The few reports are not a random sample and nearby places can overlap. Rain uses ERA5 timing scaled to an illustrative 100 mm informed by reporting, not a measured local hourly record. Missing lake storage, overflow and external inflows are possible causes of mismatch, not diagnosed causes of each miss.
 
 **Limits:** no momentum or velocity, no infiltration, no real sewer geometry, no lakes as storage, no inflow
 from beyond the area, and 500 m cells rather than street scale. Conductance, drain capacity and thresholds are
@@ -126,3 +124,16 @@ data/bengaluru/   reproducible data pipeline
 scripts/          surrogate training
 docs/             design, model area, demo script
 ```
+
+## Review fixes (2026-09-20)
+
+Shortening a horizon, including leaving the replay, moves later interventions to
+before the new end. If failure and clearing were ordered correctly, that order is
+preserved. Direct engine inputs still receive strict validation. Tests cover this
+transition alongside timed drain upgrades, detention/release, shared water limits,
+invalid controls, AI parameter bounds and unique response footprints.
+
+The main modelling extension remains lake storage and incoming catchment flow.
+It requires defensible stage–storage curves, outlet levels, connection topology
+and inflow schedules; the existing map geometry alone does not supply them. No
+such quantities or calibrated drainage capacities were invented in this review.

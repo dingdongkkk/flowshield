@@ -2,18 +2,18 @@
 
 Contract: 1.0. Model: `linear-storage-v1`. Read
 [simulation-design.md](simulation-design.md) and
-[simulation.ts](../src/shared/simulation.ts) before implementing.
+[simulation.ts](../src/shared/simulation.ts) when modifying the implementation.
 
 > **Amendment A (2026-09-19):** two intervention kinds (`set-drainage-capacity`,
 > `set-surface-outflow-factor`) and two `RegionFrame` fields were added. See
-> "Amendment A" in [simulation-design.md](simulation-design.md). Astra: please review
-> `src/simulation/index.ts` and `validation.ts`. Sol: the fixtures need the new frame fields.
+> "Amendment A" in [simulation-design.md](simulation-design.md). Reviewed on 2026-09-20;
+> analytical tests cover both controls. Fixtures must include the new frame fields.
 
 ## Current state and ownership
 
-Only the design, types, and this handoff are delivered. There is no engine,
-validator, worker, frontend, package manifest, or completed simulation output.
-The repository directory was initially empty apart from PDF scratch previews.
+The engine, validator, worker, frontend, Bengaluru data pipeline, replay and AI
+surrogate are implemented. `npm test` runs 21 engine and integration checks.
+The prototype has no field-calibrated drainage capacities or validated forecasts.
 
 | Owner | Files / responsibilities |
 | --- | --- |
@@ -22,14 +22,14 @@ The repository directory was initially empty apart from PDF scratch previews.
 | Opus | App scaffolding, package/lock/tsconfig files, `src/app/**`, `src/components/**`, `src/workers/**`, entry points/styles, comparison derivation and integration |
 | Sol | `tests/**`, `fixtures/**`, `docs/verification.md`, README/demo/submission documentation |
 
-These are planned ownership paths, not existing implementations. Preserve these
-three files when scaffolding. Use one package manager; Opus coordinates tooling
+These responsibilities guide future coordination; the current user-authorized
+review fixes span the app and engine tests. Use one package manager; Opus coordinates tooling
 dependencies requested by Sol. Do not overwrite another agent's active changes.
 There is no need for another agent to implement a competing simulation engine.
 
 ## Entry points and transport
 
-Astra will later export the following from `src/simulation/index.ts`:
+The engine exports the following from `src/simulation/index.ts`:
 
 ```ts
 import type {
@@ -37,7 +37,7 @@ import type {
   ValidateSimulationConfig,
 } from "../shared/simulation";
 
-// Expected export signatures ONLY; these are not runnable stubs.
+// Signatures of the implemented exports (declarations shown for reference).
 declare const validateSimulationConfig: ValidateSimulationConfig;
 declare const simulateFlood: SimulateFlood;
 export { validateSimulationConfig, simulateFlood };
@@ -251,39 +251,42 @@ Example validation failure shape (also illustrative):
 }
 ```
 
-## Parallel implementation next steps
+## Integration and next steps (2026-09-20)
 
-Opus can now scaffold the app, use the isolated illustrative fixture to build the
-view, and implement request-ID handling. Use shared scales/timestamps and retain
-both configs for comparison. Derive ScenarioComparison only after checking the
-design's comparability rules and two successful results. Respect the four
-critical-timing categories, including already-critical as a reached time of 0.
+The app, request-ID handling, comparison derivation and engine are implemented.
+Keep shared timestamps/scales and retain both configs for comparison. Respect
+all critical-timing categories, including already-critical as a reached time of 0.
 
-Astra's next task, when requested, is the engine and runtime validator. No engine
-code is present in this handoff. Contracts must remain coherent with both docs.
+The review fixes include horizon normalization in `withScenarioHorizon`, unique
+structural cell coverage in `responseFootprint`, surrogate range checks for both
+estimates and searched plans, and descriptive replay reporting. The AI weights
+were not retrained and the physical equations were not changed. Use engine
+results to verify candidate plans; an AI range check does not establish accuracy.
 
-Sol can prepare independent fixtures and checks now, without creating a second
-engine. For example, 36 mm/hour for 100 seconds on a sealed 100 m² region adds
-0.1 m³ and 0.001 m depth analytically. Other checks: conservation with only
-internal flow; equal-head equilibrium; combined drain/pump/transfer scarcity;
-schedule changes at exact boundaries; event-order independence; undirected-edge
-reversal; output final-time inclusion; threshold equality; initially critical;
-no crossing within horizon; identical no-intervention comparisons; convergence
-under smaller steps; invalid-config paths; and numerical-failure propagation.
+`npm test` exercises 21 engine and integration cases, including analytical rain
+conversion, equilibrium, shared scarce water, event timing, conservation,
+convergence, critical crossing semantics, structured failures, default Bengaluru
+comparison, horizon changes, AI limits, unique footprints, timed drainage
+upgrades, detention/release and invalid intervention controls. `npm run build`
+checks the full TypeScript application and produces the Vite build.
 
-Create normal/heavy/blocked-drain demo scenarios and compute their actual
-outcomes only when the engine exists. Read numerical residuals and donor limiting
+Independent field verification remains outstanding. Lake storage and upstream
+inflows are the main next modelling extension; mapped geometry alone does not
+supply storage curves, measured levels or discharge schedules. Do not invent
+those quantities or label scenario assumptions as calibrated values.
+
+Use the existing presets and read actual results and water-balance diagnostics
 before interpreting improvements. The human team should be able to explain:
-"Rain adds measured volume; water moves down a surface-height difference;
-every outgoing request shares only water actually available; drains remove
-tracked volume; the warning is the first numerical threshold crossing."
+"Rain adds volume according to an explicit schedule; water moves down a
+surface-height difference; outgoing requests share the water available; drains,
+pumps and boundary exports are tracked; risk is a configurable threshold."
 
-## Checks completed for this contract delivery
+## Current verification
 
-- The shared module and the full TypeScript example extracted above passed a
-  strict, no-emit TypeScript check with ES2022 and bundler module resolution.
-- The JSON failure example parsed successfully; local documentation links resolve.
-- `src` contains only the shared types. No engine, validator, worker, frontend,
-  or package setup was added.
-- These are contract checks, not simulation tests. No numerical accuracy,
-  runtime performance, or real-world forecasting claim has been verified.
+- `npm test`: 21 checks pass, including the new regression cases.
+- `npm run build`: TypeScript and Vite pass. The lazy map bundle still produces
+  a size warning; it is not a build failure.
+- Browser checks cover shortening a horizon after late deployment, pump counts
+  outside AI support, and the exploratory replay wording.
+- These checks establish implementation behaviour, not real-world forecasting
+  validity. The demo script and model notes describe the remaining limits.

@@ -1,10 +1,10 @@
 # FLOWSHIELD simulation design
 
-Status: contract 1.0, model `linear-storage-v1`; design only. No engine has been
-implemented or validated. The workspace contained no app, package manifest,
-Git repository, or applicable AGENTS.md when inspected. The only existing files
-were temporary brochure previews. This design adopts the requested React,
-TypeScript, Vite, and worker architecture without scaffolding the application.
+Status (2026-09-20): contract 1.0, model `linear-storage-v1`, implemented in
+`src/simulation/index.ts` with runtime validation, Web Worker integration and a
+React/TypeScript/Vite interface. The automated suite covers analytical cases,
+structural interventions and application integration. This verifies implementation
+behaviour; the Bengaluru model has not been calibrated or validated as a forecast.
 
 ## Requirements extracted from the brochure
 
@@ -277,15 +277,17 @@ Synthetic conductance and thresholds require disclosure. Numerical stability
 and conserved volume do not establish physical accuracy.
 
 No runtime LLM, live weather, database, authentication, or population estimator
-is required by this contract. The present deliverable is documentation and
-types only; engine correctness, benchmark performance, and forecast validity
-remain untested until implementation and independent verification.
+is required by this contract. Engine behaviour and application integration are
+exercised by `npm test`, which also reports default-scenario runtime. Independent
+field validation and calibration remain outstanding; tests do not establish
+forecast accuracy.
 
 ## Amendment A (2026-09-19): structural response measures
 
-Added by Opus at the team's request, while Astra was unavailable; Astra should
-review. The amendment is additive: existing configs and results keep their meaning.
-Contract and model version strings are unchanged.
+Implemented by Opus and reviewed with analytical regression checks on 2026-09-20.
+Existing configs retain their meaning. Contract and model version strings are
+unchanged within this prototype; older serialized results without the new required
+frame fields must be recomputed before the current transport validator accepts them.
 
 Two intervention kinds, validated like the existing ones (known region, whole-second
 time < duration, no duplicate region/kind/time):
@@ -306,3 +308,28 @@ conservative.
 
 `RegionFrame` gains `drainageCapacityM3PerS` and `surfaceOutflowFactor` (the
 controls in effect at the frame time). The app's transport validator requires both.
+
+Detention is a reduction in surface conductance, not a reservoir with surveyed
+capacity, an overflow crest, or a release rule. No finite detention capacity is
+modelled. Stored water remains in the cell and can increase its risk.
+
+## Application review (2026-09-20)
+
+- Shortening the horizon clamps action times to at most five minutes before the
+  end. A previously valid failure/clearing sequence remains ordered by moving
+  failure earlier if necessary. Already invalid clearing order stays explicitly
+  ignored by the scenario builder. Direct engine inputs still receive strict
+  validation; the engine never silently changes intervention times.
+- The surrogate is checked against the shipped training generator's parameter
+  bounds, including 0–10 pumps and supported horizons. Candidate plans receive
+  the same check. Supported ranges do not guarantee every combination was seen.
+  Its metrics are mean absolute errors against held-out engine runs, not real
+  flood measurements, uncertainty intervals or maximum errors.
+- Plan footprint is the union of cells with pumps, effective drain upgrades and
+  detention. It is land coverage only, not cost: stronger upgrades can occupy
+  the same cells. Clearing is a fixed input, not part of the structural search.
+- The historical replay compares reported places to their containing cell and
+  its eight neighbours (truncated at edges). It reports descriptive overlap and
+  grid-wide neighbourhood coverage, without a significance judgement. The rain
+  series uses ERA5 timing scaled to an illustrative 100 mm total; it is not a
+  measured local hourly rainfall record.

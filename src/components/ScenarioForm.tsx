@@ -3,6 +3,7 @@ import {
   BASIN_REGION_IDS,
   DRAIN_LABELS,
   STORM_LABELS,
+  withScenarioHorizon,
   type DrainCondition,
   type ScenarioDraft,
   type StormProfile,
@@ -42,8 +43,9 @@ export function ScenarioForm({ draft, onChange, disabled }: Props) {
             value={draft.storm}
             onChange={(e) => {
               const storm = e.target.value as StormProfile;
-              if (storm === "event-2022") onChange({ ...draft, storm, durationMin: EVENT_2022.hourlyMm.length * 60 });
-              else onChange({ ...draft, storm, durationMin: draft.storm === "event-2022" ? 180 : draft.durationMin });
+              const duration = storm === "event-2022" ? EVENT_2022.hourlyMm.length * 60
+                : draft.storm === "event-2022" ? 180 : draft.durationMin;
+              onChange(withScenarioHorizon({ ...draft, storm }, duration));
             }}
           >
             {(Object.keys(STORM_LABELS) as StormProfile[]).map((k) => (
@@ -54,7 +56,8 @@ export function ScenarioForm({ draft, onChange, disabled }: Props) {
         {draft.storm === "event-2022" ? (
           <p className="field-hint">
             {EVENT_2022.scaledTotalMm} mm over the night of 4–5 Sep 2022 (peak {Math.max(...EVENT_2022.hourlyMm)} mm/h),
-            simulated for {EVENT_2022.hourlyMm.length} h. Timing from ERA5; total from IMD via {EVENT_2022.news.publisher}.
+            simulated for {EVENT_2022.hourlyMm.length} h. ERA5 timing scaled to an illustrative 100 mm total,
+            informed by reporting from {EVENT_2022.news.publisher}; not a measured local hyetograph.
           </p>
         ) : (<>
         <Field label="Peak intensity" value={`${draft.peakIntensityMmPerHour} mm/h`}>
@@ -71,12 +74,12 @@ export function ScenarioForm({ draft, onChange, disabled }: Props) {
             onChange={(e) => set("stormDurationMin", Number(e.target.value))}
           />
         </Field>
-        <Field label="Simulated horizon">
+        <Field label="Simulated horizon" hint="Shortening the horizon moves later actions to before the end and preserves failure-before-clearing order.">
           <select
             value={draft.durationMin}
             onChange={(e) => {
               const durationMin = Number(e.target.value);
-              onChange({ ...draft, durationMin, stormDurationMin: Math.min(draft.stormDurationMin, durationMin) });
+              onChange(withScenarioHorizon(draft, durationMin));
             }}
           >
             {[60, 120, 180, 240, 360].map((m) => <option key={m} value={m}>{m / 60} h</option>)}

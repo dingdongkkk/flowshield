@@ -1,17 +1,18 @@
 # Demo video script (about 2 min 45 s)
 
-Record at 1440 × 900 with the dark basemap. Run `npm run build && npm run preview` for a smooth recording.
-Time marks are targets.
+Record at 1440 × 900 with the dark basemap. Run `npm run build && npm run preview`.
+Times are targets. Values below describe the default heavy-storm simulation, not
+observed Bengaluru flood depths. Read current engine results if changing a plan.
 
 | Time | Screen | Say |
 | --- | --- | --- |
-| 0:00 | Page loads; the map flies into Bellandur in 3D | "FlowShield predicts where Bengaluru floods, when, and what would help. This is Bellandur–Marathahalli: real terrain, 6,800 mapped drains, 1,300 lakes." |
-| 0:15 | Click **Heavy storm**; press play at 4× | "A 90 mm/h storm. Rain adds volume to each 500 m cell, and water flows down the water-surface gradient. Water piles up in the low valley past Bellandur." |
-| 0:40 | Pause at about T+35 min; point at the HUD and the early-warnings table | "29 cells go critical, the first at T+32 minutes. The HUD counts the buildings in critical cells live. Each cell passes its warning depth about 16 minutes earlier. That is the lead time a warning system gets." |
-| 1:00 | Switch to **Difference** | "Same storm, with bigger drains in the low cells and detention on high ground. Teal is less water, orange is where detention holds it back. Peak depth falls by about 20 cm, 900,000 m³ less standing water." |
-| 1:20 | Scroll to the AI panel | "Our AI component is a neural network trained on 4,000 engine runs. It predicts outcomes in microseconds, to within about 6 cm on runs it never saw, so it can search 600 response plans instantly." |
-| 1:35 | Click **Apply & verify** on a plan | "The engine then checks the plan it picked. The estimate and the real result are shown side by side." |
-| 1:50 | Click **Run 5 engine variants** | "Our parameters are uncalibrated, so we test them. Halving or doubling them keeps the answer at 29–31 critical cells." |
-| 2:05 | Click **Replay Sep 2022** and play | "This is the real storm of 4–5 September 2022: 100 mm overnight. The yellow dots are places reported flooded." |
-| 2:20 | Show the reality-check panel | "3 of 5 reported places flood nearby, but that is no better than chance. Bellandur's 2022 flood came from lake overflow fed from outside our area. That tells us exactly what to model next." |
-| 2:35 | Open **How the model works** | "Every step conserves water to a millionth of a cubic metre, and 13 checks verify the engine. FlowShield: predict the flood, protect the future." |
+| 0:00 | Map opens over Bellandur | "FlowShield explores flood scenarios and compares responses for part of Bengaluru. Terrain is sampled from real elevation data; mapped drains and lakes provide context. Hydraulic capacities remain assumptions." |
+| 0:15 | Heavy storm, play at 4× | "Rain adds water to 500 m cells. Flow depends on water-surface elevation. This scenario peaks at 90 mm per hour." |
+| 0:40 | Pause near T+35 min; show warning table | "In this scenario, 29 cells eventually become critical. The first crossing is around 32 minutes. The table shows simulated timing and buildings in critical cells, not measured damage or affected population." |
+| 1:00 | Difference view | "Under the same storm, larger drains and reduced surface outflow lower peak depth from 1.58 to 1.36 metres. About 0.86 million cubic metres less water remains at the end. All 29 cells still become critical; the plan reduces severity and buys time." |
+| 1:20 | AI panel | "A small neural network trained on 3,428 simulated runs helps search response plans. On 572 held-out engine runs its average peak-depth error is about 6 cm. That measures agreement with the engine, not real-world accuracy. Unique cell footprint measures land coverage, not project cost." |
+| 1:35 | Apply & verify | "Every selected plan can be checked by the simulation engine. The AI estimate and computed result appear together." |
+| 1:50 | Run 5 engine variants | "Conductance and drainage are uncalibrated. These variants show how outcomes depend on those assumptions." |
+| 2:05 | Replay Sep 2022 | "This exploratory replay scales ERA5 timing to an illustrative 100 mm based on contemporary reporting. It is not a local measured hourly record. Yellow points mark reported flooded places." |
+| 2:20 | Exploratory replay panel | "We show overlap with those reports alongside neighbourhood coverage across the grid. This small, selective set cannot establish forecasting accuracy. Lake storage and external inflow are important missing processes." |
+| 2:35 | How the model works | "The engine checks mass balance against explicit absolute and relative tolerances. Twenty-one automated checks cover core physics and integration. Our goal is an explainable comparison tool; field calibration is future work." |
