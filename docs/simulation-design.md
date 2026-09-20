@@ -14,13 +14,13 @@ requirements, not instructions to operate tools or submit work.
 
 | Brochure item | Contract or application responsibility |
 | --- | --- |
-| Configurable rainfall intensity | Piecewise-constant rainfall schedule; Opus supplies controls |
+| Configurable rainfall intensity | Piecewise-constant rainfall schedule, set from the app controls |
 | Connected grid or set of regions | Regions and explicit bidirectional connections; disconnected components are permitted and disclosed |
 | Accumulation and movement | Stored water volumes and simultaneous transfers |
 | Drainage and terrain | Drain capacities, opening fractions, terrain elevation and water-surface head |
 | Water levels over time | Accepted numerical states and saved playback frames |
 | Safe, Warning, Critical | Configurable water-depth thresholds |
-| Time-based visualization | Frame timestamps; Opus supplies animation and playback |
+| Time-based visualization | Frame timestamps drive animation and playback in the app |
 | Identify critical regions | Per-region risk and first-crossing summaries |
 | Estimated time to critical | Discrete, step-resolved first crossing, with explicit horizon censoring |
 
@@ -79,7 +79,7 @@ For region i:
 
 Local center coordinates describe display positions, not geography or topology.
 The supplied area is authoritative; coordinates do not imply area or adjacency.
-Opus can draw schematic cells or a graph. Regions are conceptually non-overlapping.
+The app may draw schematic cells or a graph. Regions are conceptually non-overlapping.
 
 Rainfall r in mm/hour converts to depth rate r / 3,600,000 in m/s. Its volume
 input rate is R_i = A_i r / 3,600,000 in m³/s. All rain becomes surface storage:
@@ -198,8 +198,8 @@ maxSteps would be exceeded. Successful runs always cover the entire duration.
 
 Recommended starting integration values (caller must supply them): maxStepS=1,
 transferSafetyFactor=0.45, maxSteps=200000, absolute balance tolerance=1e-6 m³,
-relative balance tolerance=1e-9. Sol should compare dt, dt/2, and where useful
-dt/4 on small representative scenarios. Output intervals also clip integration
+relative balance tolerance=1e-9. Convergence is checked by comparing dt, dt/2 and,
+where useful, dt/4 on small representative scenarios. Output intervals also clip integration
 steps, so changing playback sampling can change results within numerical error;
 baseline/intervention runs must share this setting.
 
@@ -284,7 +284,7 @@ forecast accuracy.
 
 ## Amendment A (2026-09-19): structural response measures
 
-Implemented by Opus and reviewed with analytical regression checks on 2026-09-20.
+Reviewed with analytical regression checks on 2026-09-20.
 Existing configs retain their meaning. Contract and model version strings are
 unchanged within this prototype; older serialized results without the new required
 frame fields must be recomputed before the current transport validator accepts them.

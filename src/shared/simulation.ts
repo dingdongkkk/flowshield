@@ -1,6 +1,6 @@
 /**
  * FLOWSHIELD contract 1.0. Types only: this file implements no simulator.
- * Normative semantics: docs/simulation-design.md and docs/agent-handoff.md.
+ * Normative semantics: docs/simulation-design.md.
  * All values must be finite, JSON-compatible data; readonly is not validation.
  */
 

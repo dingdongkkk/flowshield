@@ -5,9 +5,8 @@ import type {
   SimulationWorkerResponse,
 } from "../shared/simulation";
 
-// Astra owns src/simulation/index.ts. The glob resolves to an empty object
-// until that module exists, so the app builds without a placeholder engine and
-// reports the missing engine instead of producing a fabricated result.
+// The glob resolves to an empty object if src/simulation/index.ts is missing, so
+// the app still builds and reports the missing engine rather than inventing a result.
 const engineModules = import.meta.glob<{ simulateFlood?: SimulateFlood }>(
   "../simulation/index.ts",
 );

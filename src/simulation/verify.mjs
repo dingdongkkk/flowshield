@@ -1,4 +1,4 @@
-// Engine-owned analytical checks. Sol's independent suite remains separate.
+// Analytical checks for the simulation engine.
 // Run from the project root: node src/simulation/verify.mjs
 import assert from 'node:assert/strict';
 import { mkdtempSync, writeFileSync, readFileSync, readdirSync, rmSync } from 'node:fs';
