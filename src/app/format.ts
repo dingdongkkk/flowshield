@@ -26,13 +26,13 @@ export function formatDepth(m: number): string {
 
 export function formatSigned(value: number, unit: string, digits = 2): string {
   const rounded = value.toFixed(digits);
-  if (Number(rounded) === 0) return `0 ${unit}`;
+  if (Number(rounded) === 0) return "no change";
   return `${value > 0 ? "+" : "−"}${Math.abs(value).toFixed(digits)} ${unit}`;
 }
 
 export function formatVolume(m3: number): string {
   const abs = Math.abs(m3);
-  if (abs >= 1e5) return `${(m3 / 1e6).toFixed(2)} million m³`;
+  if (abs >= 1e5) return `${(m3 / 1e6).toFixed(2)}\u00A0million\u00A0m³`;
   if (abs >= 1000) return `${Math.round(m3).toLocaleString()} m³`;
   return `${m3.toFixed(abs < 1 ? 4 : 1)} m³`;
 }

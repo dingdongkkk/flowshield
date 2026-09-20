@@ -102,6 +102,21 @@ not committed.
 
 ## Run it
 
+For recording, click **Presentation mode** in the header. At 1440 × 900 it shows
+two maps with linked pan/zoom and a shared playback clock, plus full-run peak
+depth, cells ever critical, and the selected cell's critical-time comparison.
+**Jump to critical time** seeks to the first saved frame at or after that cell's
+baseline crossing; the card reports the engine's finer crossing time. Click a
+cell on either map or use the region selector. **Reset map view** restores the
+initial 2D extent.
+
+Scenario controls, AI plan search, and evidence panels expand on demand. Stale
+or incomplete comparisons are hidden until both current runs are ready. With
+no response actions, both maps use the same baseline result and say so. **Exit
+presentation** returns to the dashboard with inputs, selected cell and playback
+position retained; playback pauses when switching modes. Mobile layouts stack
+the two maps. Basemap tiles still require an internet connection.
+
 ```bash
 npm install
 npm run dev        # http://localhost:5173
